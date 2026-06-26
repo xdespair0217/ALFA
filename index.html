@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALFA ROMEO 保固稽核與專案作業控制台 V10_Final</title>
+    <title>ALFA ROMEO 保固稽核與專案作業控制台 V11_Fixed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     
@@ -117,6 +117,30 @@
 
         .form-control { width: 100%; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 13px; outline: none; }
         
+        /* 依截圖優化：製造碼(DAM)捷徑按鈕排版 */
+        .vin-input-group {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .btn-dam-quick {
+            background-color: #faf5ff;
+            color: #7c3aed;
+            border: 1px solid #ddd6fe;
+            padding: 6px 10px;
+            border-radius: 5px;
+            font-size: 11.5px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+            height: 33px;
+            transition: all 0.2s;
+        }
+        .btn-dam-quick:hover { background-color: #7c3aed; color: white; border-color: #7c3aed; }
+
         /* 雙文字框完全平齊等對高度 */
         .textarea-control {
             width: 100%;
@@ -326,7 +350,7 @@
         /* 彈出視窗 (Modal) 樣式 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75); display: none; align-items: center; justify-content: center; z-index: 2000;
+            background: rgba(0, 0, 0, 0.75); display: none; align-items: center; justify-content: center; z-index: 9999;
         }
         .modal-content {
             background: #0b132b; color: #f1f5f9; border: 2px solid #00b4d8; box-shadow: 0 0 20px rgba(0, 180, 216, 0.5);
@@ -358,7 +382,7 @@
         .modal-kpi-panel { border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.08); padding: 12px; border-radius: 0 6px 6px 0; margin-top: 15px; font-size: 12.5px; line-height: 1.5; }
 
         .checkbox-item { display: flex; align-items: center; gap: 5px; cursor: pointer; font-size: 12px; }
-        .toast { position: fixed; bottom: 20px; right: 20px; background: rgba(15, 23, 42, 0.9); color: white; padding: 8px 16px; border-radius: 4px; font-size: 13px; display: none; z-index: 3000; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: rgba(15, 23, 42, 0.9); color: white; padding: 8px 16px; border-radius: 4px; font-size: 13px; display: none; z-index: 99999; }
         
         /* 彈窗內小按鈕 */
         .inline-copy-btn { background: #0284c7; color: white; border: none; padding: 2px 6px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-left: 5px; flex-shrink: 0; }
@@ -479,13 +503,18 @@
                     <label class="label-with-check">
                         <input type="checkbox" id="sync_plate_checked" onchange="updatePreview()"> <span>車牌</span>
                     </label>
-                    <input type="text" id="car_plate" class="form-control" placeholder="ABC-1234" oninput="updatePreview()">
+                    <input type="text" id="car_plate" class="form-control" placeholder="ABC-1234" oninput="updatePreview()" style="height: 33px;">
                 </div>
                 <div class="form-group">
                     <label class="label-with-check">
                         <input type="checkbox" id="sync_vin_checked" onchange="updatePreview()"> <span>車身號碼 (VIN)</span>
                     </label>
-                    <input type="text" id="vin_code" class="form-control" placeholder="17位字元" oninput="updatePreview()">
+                    <div class="vin-input-group">
+                        <input type="text" id="vin_code" class="form-control" placeholder="17位字元" oninput="updatePreview()" style="height: 33px;">
+                        <button type="button" class="btn-dam-quick" onclick="openModal('modal_dam_guide')">
+                            <i class="fa-solid fa-magnifying-glass"></i> 製造碼 (DAM) 辨識指南
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -610,6 +639,18 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modal_dam_guide">
+        <div class="modal-content" style="border-color: #7c3aed; box-shadow: 0 0 20px rgba(124, 58, 237, 0.4); width: 620px;">
+            <button class="modal-close" onclick="closeModal('modal_dam_guide')"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-header-title" style="color: #7c3aed; border-bottom-color: #1e293b;"><i class="fa-solid fa-barcode"></i> ALFA ROMEO 實體標籤製造碼 (DAM) 識別對照指南</div>
+            <p style="font-size: 12.5px; opacity: 0.85; line-height: 1.5; margin-bottom: 10px;">事先授權依照圖片內代碼依據。</p>
+            <div style="border-top: 1px solid #1e293b; padding-top: 10px;">
+                <span style="font-size: 12px; font-weight: bold; color: #00b4d8;"><i class="fa-solid fa-image"></i> 實體車身標籤位置參照（圖例指南）：</span>
+                <img src="https://raw.githubusercontent.com/xdespair0217/ALFA/main/TT01.jpg" alt="ALFA ROMEO 製造碼標籤辨識圖指南" class="modal-embedded-img">
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="modal_保固_docs">
         <div class="modal-content" style="border-color: #c2410c; box-shadow: 0 0 20px rgba(194, 65, 12, 0.4); width: 650px;">
             <button class="modal-close" onclick="closeModal('modal_保固_docs')"><i class="fa-solid fa-xmark"></i></button>
@@ -633,7 +674,7 @@
                     <button class="inline-copy-btn" onclick="quickCopyText('https://drive.google.com/file/d/1JDtoYSXev-C6LGdth2XLARUbsLOOiJFc/view?usp=sharing')">複製連結</button>
                 </div>
                 <div style="margin-top: 4px; text-align: right;">
-                    <a href="https://drive.google.com/file/d/1JDtoYSXev-C6LGth2XLARUbsLOOiJFc/view?usp=sharing" target="_blank" class="modal-btn-action" style="background: #ea580c; padding: 4px 10px; font-size:11.5px;"><i class="fa-solid fa-external-link"></i> 打開 廠長整理精華</a>
+                    <a href="https://drive.google.com/file/d/1JDtoYSXev-C6LGdth2XLARUbsLOOiJFc/view?usp=sharing" target="_blank" class="modal-btn-action" style="background: #ea580c; padding: 4px 10px; font-size:11.5px;"><i class="fa-solid fa-external-link"></i> 打開 廠長整理精華</a>
                 </div>
             </div>
         </div>
@@ -718,10 +759,12 @@
     </div>
 
     <div class="modal-overlay" id="modal_core_1"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_1')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">壹、時間戳記與流程鐵律</div><ul class="modal-list"><li><strong>工單開立鐵律 (進廠日 = 診斷日)：</strong> 車輛進廠確認後，務必「先開立服務工單，方能做任何診斷與拆裝」。</li><li><strong>完工送件「7 天黃金期」：</strong> 維修完成後，必須於 7 天內在 DMS 系統中提交所賠申請。</li><li><strong>全流程「35 天極限」：</strong> 從車輛進廠「開單日」起算，至 DMS「送件日」止，整個保固案件生命週期必須在 35 天內結案完成。</li><li><strong>退件更正「5 天限時令」：</strong> 案件若因資料不齊遭原廠退件，同仁必須在 5 天內完成更正並重新上傳。</li></ul></div></div>
-    <div class="modal-overlay" id="modal_core_2"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_2')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">貳、技術診斷與「預先授權」六大敏感邊界</div><table class="modal-table"><thead><tr><th style="width:50px;">編號</th><th style="width:140px;">項目</th><th>規範 / 基準</th></tr></thead><tbody><tr><td>1</td><td><strong>總維修費用超標</strong></td><td>單一保固案件之總維修費用高於台幣 85,000 元基準。</td></tr><tr><td>2</td><td><strong>漆面與防蝕相關</strong></td><td>所有與車身漆面品質、防鏽蝕穿孔保固相關的維修。</td></tr><tr><td>3</td><td><strong>未領牌車輛組件</strong></td><td>未領牌新車在 PDI 階段發現的短裝、錯裝領組件案件。</td></tr><tr><td>4</td><td><strong>特定技術文獻</strong></td><td>技術通報（TSB）或 TSO 條款中明確規定需要事前授權之項目。</td></tr><tr><td>5</td><td><strong>車輪與底盤整備</strong></td><td>車輪更換、底盤定位或平衡。</td></tr><tr><td>6</td><td><strong>核心動力核心</strong></td><td>大電池（牽引電池）的任何維修與更換。</td></tr></tbody></table><div class="badge-warning"><strong>⚠️ 核銷極限：</strong>取得預先授權編號後，必須在 60 天內申請所賠，逾期取消。</div></div></div>
-    <div class="modal-overlay" id="modal_core_3"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_3')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">參、數位佐證矩陣與舊品保存規範</div><p style="font-size:13px; color:#00b4d8; font-weight:700;">1. DMS 出保必備之「數位佐證矩陣」</p><ul class="modal-list"><li><strong>完工交車單：</strong>必須填入明確的「完工日期」。</li><li><strong>完整簽名矩陣：</strong>具備客戶、技術、接待、終檢人員及廠長的完整簽名。</li><li><strong>維修打卡紀錄 (工時 ±20% 限制)：</strong>打卡時間不得高於或低於標準工時的 20%。</li><li><strong>零件發料明細表 / 車輛行照 / 視覺化故障影像：</strong>相片需清晰，錄影切勿超過 30 秒。</li></ul><p style="font-size:13px; color:#10b981; font-weight:700; margin-top:10px;">2. 保固舊品 (故障件) 管理條款</p><ul class="modal-list"><li>廠內必須妥善保存 90 天，以防原廠隨時抽查、寄回。</li></ul></div></div>
+    <div class="modal-overlay" id="modal_core_2"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_2')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">貳、技術診斷與「預先授權」六大敏感邊界</div><table class="modal-table"><thead><tr><th style="width:50px;">編號</th><th style="width:140px;">項目</th><th>規範 / 基準</th></tr></thead><tbody><tr><td>1</td><td><strong>總維修費用超標</strong></td><td>單一保固案件之總維修費用高於台幣 85,000 元基準。</td></tr><tr><td>2</td><td><strong>漆面與防蝕相關</strong></td><td>所有與車身漆面品質、防鏽蝕穿孔保固相關的維修。</td></tr><tr><td>3</td><td><strong>未領牌車輛組件</strong></td><td>未領牌新車在 PDI 階段發現的短裝、錯裝領組件案件。</td></tr><tr><td>4</td><td><strong>特定技術文獻</strong></td><td>技術通報（TSB）或 TSO 條款中明確規定需要事前授權之項目。</td></tr><tr><td>5</td><td><strong>車輪與底盤整備</strong></td><td>車輪更換、底盤定位或平衡。</td></tr><tr><td>6</td><td><strong>核心動力核心</strong></td><td>大電池（牽引電池）的 any 維修與更換。</td></tr></tbody></table><div class="badge-warning"><strong>⚠️ 核銷極限：</strong>取得預先授權編號後，必須在 60 天內申請所賠，逾期取消。</div></div></div>
+    <div class="modal-overlay" id="modal_core_3"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_3')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">參、數位佐證矩陣與舊品保存規範</div><p style="font-size:13px; color:#00b4d8; font-weight:700;">1. DMS 出保必備之「數位佐證矩陣」</p><ul class="modal-list"><li><strong>完工交車單：</strong>必須填入明確的「完工日期」。</li><li><strong>完整簽名矩陣：</strong>具備客戶、技術、接待、終檢人員及廠長的完整簽名。</li><li><strong>維修打卡紀錄 (工時 ±20% 限制)：</strong>打卡時間不得高於或低於標準工時的 20%。</li><li><strong>零件發料明細表 / 車輛行照 / 視覺化故障影像：</strong>相片需清晰，錄影切勿超過 30秒。</li></ul><p style="font-size:13px; color:#10b981; font-weight:700; margin-top:10px;">2. 保固舊品 (故障件) 管理條款</p><ul class="modal-list"><li>廠內必須妥善保存 90 天，以防原廠隨時抽查、寄回。</li></ul></div></div>
     <div class="modal-overlay" id="modal_core_4"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_4')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">肆、原廠系統實作 (DMS / LinkEntry / Tempario)</div><p style="font-size:13px; font-weight:700; color:#f59e0b;">代碼缺失之「截圖回報機制」</p><ul class="modal-list"><li>系統中無對應之公制工時代碼，必須將 Tempario 完整截圖，以 Email 正式發送給管理團隊。<strong>嚴禁使用 Line 傳送</strong>。</li><li>針對車型代號為 F60F 的品質專案，原廠在出廠前已全數施作完成，各廠站直接免除執行。但若系統跳出 F538 專案，則必須確實實施。</li></ul></div></div>
     <div class="modal-overlay" id="modal_core_5"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_5')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">伍、2026 年度原廠保固稽核整備</div><ul class="modal-list"><li><strong>風暴啟動：</strong>2026 年度原廠保固稽核已正式啟動。</li><li><strong>即刻自查：</strong>各廠站自查前六個月（包含 2025 年底 11、12 月至當前 2026 年 6 月）的所有保固案件。</li><li><strong>追溯扣款風險：</strong>事後稽核一旦發現流程或資料不齊，將執行追溯扣款。</li></ul></div></div>
+
+    <div id="toast_msg" class="toast"></div>
 
     <script>
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
@@ -743,7 +786,6 @@
             updatePreview();
         }
 
-        // 點擊快捷按鈕時，僅將三個數字精準打入格子，不破壞代碼鏈結構
         function injectPosCode(code) {
             document.getElementById('syntax_pos').value = code;
             buildSyntaxChain();
@@ -900,7 +942,6 @@
             document.getElementById('out_reason').value = rawReason;
             document.getElementById('out_check').value = rawCheck;
 
-            // 即時大合一總覽區動態拼裝
             document.getElementById('out_combined_all').value = 
 `=== 欄位1：車主車輛故障信息 ===\n${finalInfo}\n
 === 欄位2：檢修過程 ===\n${rawReason}\n
@@ -909,9 +950,15 @@
 
         function copyAllFields() {
             const combinedText = document.getElementById('out_combined_all').value;
+            if(!combinedText || combinedText.trim() === "=== 欄位1：車主車輛故障信息 ===\n---\n\n=== 欄位2：檢修過程 ===\n\n\n=== 欄位3：檢查與處置 ===") {
+                alert('目前總覽區無有效內容可供複製！');
+                return;
+            }
             navigator.clipboard.writeText(combinedText).then(() => {
                 showToast("總合文本已成功複製到剪貼簿！");
-            }).catch(err => { alert('複製失敗。'); });
+            }).catch(err => { 
+                alert('複製失敗，請手動複製總覽框文字。'); 
+            });
         }
 
         window.onload = function() {
