@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALFA ROMEO 保固稽核與專案作業控制台 V9_Final_Updated</title>
+    <title>ALFA ROMEO 保固稽核與專案作業控制台 V10_Final</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     
@@ -158,6 +158,27 @@
         .dms-grid-container { display: grid; grid-template-columns: 1.2fr 1fr 1fr 0.8fr; gap: 4px; }
         .dms-input-wrapper { display: flex; flex-direction: column; gap: 2px; }
         .dms-permanent-label { font-size: 10.5px; color: #64748b; font-weight: 500; padding-left: 2px; }
+        
+        /* 位置代碼快捷按鈕樣式 */
+        .pos-quick-links {
+            display: flex;
+            gap: 4px;
+            margin-top: 2px;
+        }
+        .btn-pos-shortcut {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 3px;
+            font-size: 9.5px;
+            color: #475569;
+            cursor: pointer;
+            padding: 1px 3px;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+            transition: all 0.15s;
+        }
+        .btn-pos-shortcut:hover { background: var(--color-blue); color: white; border-color: var(--color-blue); }
 
         /* 主界面面板右上角按鈕樣式組 */
         .btn-syntax-clear {
@@ -227,7 +248,7 @@
         }
         .btn-linkentry-quick:hover { background-color: #0ea5e9; color: white; border-color: #0ea5e9; }
 
-        /* 高飽和度色塊與單行 6 按鈕並排樣式 */
+        /* 高飽和度案例按鈕網格 */
         .btn-scenario-grid { 
             display: grid; 
             grid-template-columns: repeat(6, 1fr); 
@@ -279,7 +300,7 @@
             line-height: 1.4;
         }
 
-        /* ✨ 新增：最右側一鍵清除按鈕樣式 */
+        /* 清除總覽按鈕樣式 */
         .btn-combined-clear {
             width: 100%;
             background-color: #fff1f2;
@@ -367,22 +388,22 @@
                 
                 <div class="pdf-rule-card rule-priority-1">
                     <div style="font-size: 13px; font-weight: 700; margin-bottom: 3px;">1 第一重：DMS 紀錄優先檢視</div>
-                    <strong>執行時機：</strong>開單前請先確認是否有執行過。ALFA 查專案作業 顧關 及DMS資料確認.pdf]
-                    <br><strong>核心要領：</strong>務必全面查閱該車歷史維修履歷。ALFA 查專案作業 顧關 及DMS資料確認.pdf]
-                    <br><strong>查核目的：</strong>確認是否曾於全省其他站點執行過相同召回或專案，避免虛耗。ALFA 查專案作業 顧關 及DMS資料確認.pdf]
+                    <strong>執行時機：</strong>開單前請先確認是否有執行過。
+                    <br><strong>核心要領：</strong>務必全面查閱該車歷史維修履歷。
+                    <br><strong>查核目的：</strong>確認是否曾於全省其他站點執行過相同召回或專案，避免虛耗。
                 </div>
 
                 <div class="pdf-rule-card rule-priority-2">
                     <div style="font-size: 13px; font-weight: 700; margin-bottom: 3px;">2 第二重：VIN 實時狀態查核</div>
-                    <strong>執行方式：</strong>登入原廠專案系統，輸入車身號碼進行實時判定。ALFA 查專案作業 顧關 及DMS資料確認.pdf]
-                    <br>⚠️ <strong>顯示驚嘆號：</strong>代表有專案須執行。ALFA 查專案作業 顧關 及DMS資料確認.pdf]
-                    <br><strong>無驚嘆號：</strong>代表無專案或已執行完畢。ALFA 查專案作業 顧關 及DMS資料確認.pdf]
+                    <strong>執行方式：</strong>登入原廠專案系統，輸入車身號碼進行實時判定。
+                    <br>⚠️ <strong>顯示驚嘆號：</strong>代表有專案須執行。
+                    <br><strong>無驚嘆號：</strong>代表無專案或已執行完畢。
                 </div>
 
                 <div class="pdf-rule-card rule-priority-3">
                     <div style="font-size: 13px; font-weight: 700; margin-bottom: 3px;">3 第三重：結案軌跡完整性機制</div>
-                    <div style="margin-top: 3px;"><strong>情境 A (系統未鎖定)：</strong>直接聯絡並請保固專員撤銷該筆案件。ALFA 查專案作業 顧關 及DMS資料確認.pdf]</div>
-                    <div style="margin-top: 2px;"><strong>情境 B (系統已鎖定)：</strong>內部系統直接進行「工資打零」結案，且必須在備註欄完整註記軌跡。ALFA 查專案作業 顧關 及DMS資料確認.pdf]</div>
+                    <div style="margin-top: 3px;"><strong>情境 A (系統未鎖定)：</strong>直接聯絡並請保固專員撤銷該筆案件。</div>
+                    <div style="margin-top: 2px;"><strong>情境 B (系統已鎖定)：</strong>內部系統直接進行「工資打零」結案，且必須在備註欄完整註記軌跡。</div>
                 </div>
             </div>
 
@@ -514,22 +535,28 @@
                     </div>
                 </div>
                 
-                <div class="dms-grid-container">
-                    <div class="dms-input-wrapper">
-                        <input type="text" id="syntax_labor" class="form-control" placeholder="例：5540B31" style="font-size:11px; padding:4px;" oninput="buildSyntaxChain()">
-                        <span class="dms-permanent-label">主因工時</span>
-                    </div>
-                    <div class="dms-input-wrapper">
-                        <input type="text" id="part_no" class="form-control" placeholder="例：1" style="font-size:11px; padding:4px;" oninput="buildSyntaxChain()">
-                        <span class="dms-permanent-label">主因零件</span>
-                    </div>
-                    <div class="dms-input-wrapper">
-                        <input type="text" id="syntax_dtc" class="form-control" placeholder="例：BA" style="font-size:11px; padding:4px;" oninput="buildSyntaxChain()">
-                        <span class="dms-permanent-label">故障碼</span>
-                    </div>
-                    <div class="dms-input-wrapper">
-                        <input type="text" id="syntax_pos" class="form-control" placeholder="例：010" style="font-size:11px; padding:4px;" oninput="buildSyntaxChain()">
-                        <span class="dms-permanent-label">位置代碼</span>
+                <div class="grid-container" style="display: grid; grid-template-columns: 1fr; gap: 0px; box-shadow: none; padding: 0px; border: none;">
+                    <div class="dms-grid-container">
+                        <div class="dms-input-wrapper">
+                            <input type="text" id="syntax_labor" class="form-control" placeholder="例：5540B31" style="font-size:11px; padding:4px;" oninput="buildSyntaxChain()">
+                            <span class="dms-permanent-label">主因工時</span>
+                        </div>
+                        <div class="dms-input-wrapper">
+                            <input type="text" id="part_no" class="form-control" placeholder="例：1" style="font-size:11px; padding:4px;" oninput="buildSyntaxChain()">
+                            <span class="dms-permanent-label">主因零件</span>
+                        </div>
+                        <div class="dms-input-wrapper">
+                            <input type="text" id="syntax_dtc" class="form-control" placeholder="例：BA" style="font-size:11px; padding:4px;" oninput="buildSyntaxChain()">
+                            <span class="dms-permanent-label">故障碼</span>
+                        </div>
+                        <div class="dms-input-wrapper">
+                            <input type="text" id="syntax_pos" class="form-control" placeholder="例：010" style="font-size:11px; padding:4px;" oninput="buildSyntaxChain()">
+                            <span class="dms-permanent-label">位置代碼</span>
+                            <div class="pos-quick-links">
+                                <button type="button" class="btn-pos-shortcut" onclick="injectPosCode('010')">010-LEFT</button>
+                                <button type="button" class="btn-pos-shortcut" onclick="injectPosCode('090')">090-RIGHT</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -606,7 +633,7 @@
                     <button class="inline-copy-btn" onclick="quickCopyText('https://drive.google.com/file/d/1JDtoYSXev-C6LGdth2XLARUbsLOOiJFc/view?usp=sharing')">複製連結</button>
                 </div>
                 <div style="margin-top: 4px; text-align: right;">
-                    <a href="https://drive.google.com/file/d/1JDtoYSXev-C6LGdth2XLARUbsLOOiJFc/view?usp=sharing" target="_blank" class="modal-btn-action" style="background: #ea580c; padding: 4px 10px; font-size:11.5px;"><i class="fa-solid fa-external-link"></i> 打開 廠長整理精華</a>
+                    <a href="https://drive.google.com/file/d/1JDtoYSXev-C6LGth2XLARUbsLOOiJFc/view?usp=sharing" target="_blank" class="modal-btn-action" style="background: #ea580c; padding: 4px 10px; font-size:11.5px;"><i class="fa-solid fa-external-link"></i> 打開 廠長整理精華</a>
                 </div>
             </div>
         </div>
@@ -694,7 +721,7 @@
     <div class="modal-overlay" id="modal_core_2"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_2')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">貳、技術診斷與「預先授權」六大敏感邊界</div><table class="modal-table"><thead><tr><th style="width:50px;">編號</th><th style="width:140px;">項目</th><th>規範 / 基準</th></tr></thead><tbody><tr><td>1</td><td><strong>總維修費用超標</strong></td><td>單一保固案件之總維修費用高於台幣 85,000 元基準。</td></tr><tr><td>2</td><td><strong>漆面與防蝕相關</strong></td><td>所有與車身漆面品質、防鏽蝕穿孔保固相關的維修。</td></tr><tr><td>3</td><td><strong>未領牌車輛組件</strong></td><td>未領牌新車在 PDI 階段發現的短裝、錯裝領組件案件。</td></tr><tr><td>4</td><td><strong>特定技術文獻</strong></td><td>技術通報（TSB）或 TSO 條款中明確規定需要事前授權之項目。</td></tr><tr><td>5</td><td><strong>車輪與底盤整備</strong></td><td>車輪更換、底盤定位或平衡。</td></tr><tr><td>6</td><td><strong>核心動力核心</strong></td><td>大電池（牽引電池）的任何維修與更換。</td></tr></tbody></table><div class="badge-warning"><strong>⚠️ 核銷極限：</strong>取得預先授權編號後，必須在 60 天內申請所賠，逾期取消。</div></div></div>
     <div class="modal-overlay" id="modal_core_3"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_3')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">參、數位佐證矩陣與舊品保存規範</div><p style="font-size:13px; color:#00b4d8; font-weight:700;">1. DMS 出保必備之「數位佐證矩陣」</p><ul class="modal-list"><li><strong>完工交車單：</strong>必須填入明確的「完工日期」。</li><li><strong>完整簽名矩陣：</strong>具備客戶、技術、接待、終檢人員及廠長的完整簽名。</li><li><strong>維修打卡紀錄 (工時 ±20% 限制)：</strong>打卡時間不得高於或低於標準工時的 20%。</li><li><strong>零件發料明細表 / 車輛行照 / 視覺化故障影像：</strong>相片需清晰，錄影切勿超過 30 秒。</li></ul><p style="font-size:13px; color:#10b981; font-weight:700; margin-top:10px;">2. 保固舊品 (故障件) 管理條款</p><ul class="modal-list"><li>廠內必須妥善保存 90 天，以防原廠隨時抽查、寄回。</li></ul></div></div>
     <div class="modal-overlay" id="modal_core_4"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_4')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">肆、原廠系統實作 (DMS / LinkEntry / Tempario)</div><p style="font-size:13px; font-weight:700; color:#f59e0b;">代碼缺失之「截圖回報機制」</p><ul class="modal-list"><li>系統中無對應之公制工時代碼，必須將 Tempario 完整截圖，以 Email 正式發送給管理團隊。<strong>嚴禁使用 Line 傳送</strong>。</li><li>針對車型代號為 F60F 的品質專案，原廠在出廠前已全數施作完成，各廠站直接免除執行。但若系統跳出 F538 專案，則必須確實實施。</li></ul></div></div>
-    <div class="modal-overlay" id="modal_core_5"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_5')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">伍、2026 年度原廠保固稽核整備</div><ul class="modal-list"><li><strong>風暴啟動：</strong>2026 年度原廠保固稽核已正式啟動。</li><li><strong>即刻自查：</strong>各廠站自查前六個月（包含 2025 年底 11、12 月至當前 2026 年 6 月）的所有保固案件。</li><li><strong>追溯扣款風險：</strong>事後稽核一旦發現流程或資料不齊，將執行追溯扣款.</li></ul></div></div>
+    <div class="modal-overlay" id="modal_core_5"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_5')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">伍、2026 年度原廠保固稽核整備</div><ul class="modal-list"><li><strong>風暴啟動：</strong>2026 年度原廠保固稽核已正式啟動。</li><li><strong>即刻自查：</strong>各廠站自查前六個月（包含 2025 年底 11、12 月至當前 2026 年 6 月）的所有保固案件。</li><li><strong>追溯扣款風險：</strong>事後稽核一旦發現流程或資料不齊，將執行追溯扣款。</li></ul></div></div>
 
     <script>
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
@@ -706,7 +733,6 @@
             }
         }
 
-        // 清空中欄打單工具
         function clearDmsInputs() {
             document.getElementById('syntax_labor').value = '';
             document.getElementById('part_no').value = '';
@@ -717,14 +743,17 @@
             updatePreview();
         }
 
-        // ✨ 新增校正：完全一鍵清空右下角大合一預覽與所有錄入框報告內容
+        // 點擊快捷按鈕時，僅將三個數字精準打入格子，不破壞代碼鏈結構
+        function injectPosCode(code) {
+            document.getElementById('syntax_pos').value = code;
+            buildSyntaxChain();
+        }
+
         function clearAllCombinedPreviews() {
-            // 清空三大核心錄入框
             document.getElementById('field_info').value = '';
             document.getElementById('field_reason').value = '';
             document.getElementById('field_check').value = '';
             
-            // 重置所有打勾選項為預設不打勾
             document.getElementById('sync_plate_checked').checked = false;
             document.getElementById('sync_vin_checked').checked = false;
             document.getElementById('chk_flow_cif').checked = false;
@@ -734,7 +763,6 @@
             document.getElementById('chk_flow_postpone').checked = false;
             document.getElementById('chk_flow_auth_wait').checked = false;
             
-            // 重新整理並組裝字串（會自動清空大合一框）
             updatePreview();
             showToast("❌ 報告總合預覽內容已全數清空歸零");
         }
@@ -815,7 +843,6 @@
             updatePreview();
         }
 
-        // 即時資料流拼裝與渲染
         function updatePreview() {
             const plate = document.getElementById('car_plate').value || '---';
             const vin = document.getElementById('vin_code').value || '---';
@@ -873,25 +900,18 @@
             document.getElementById('out_reason').value = rawReason;
             document.getElementById('out_check').value = rawCheck;
 
-            // 🎯 修正核心：即時動態將合併後的最終成品完全呈現在最下方的總覽框中
+            // 即時大合一總覽區動態拼裝
             document.getElementById('out_combined_all').value = 
 `=== 欄位1：車主車輛故障信息 ===\n${finalInfo}\n
 === 欄位2：檢修過程 ===\n${rawReason}\n
 === 欄位3：檢查與處置 ===\n${rawCheck}`;
         }
 
-        // ✨ 修正核心：點擊綠色大按鈕時，100% 正確抓取總合大框值並強行打入剪貼簿
         function copyAllFields() {
             const combinedText = document.getElementById('out_combined_all').value;
-            if(!combinedText || combinedText.trim() === "=== 欄位1：車主車輛故障信息 ===\n---\n\n=== 欄位2：檢修過程 ===\n\n\n=== 欄位3：檢查與處置 ===") {
-                alert('目前總覽區無有效內容可供複製！');
-                return;
-            }
             navigator.clipboard.writeText(combinedText).then(() => {
                 showToast("總合文本已成功複製到剪貼簿！");
-            }).catch(err => { 
-                alert('瀏覽器攔截複製，請手動在下方框內全選複製。'); 
-            });
+            }).catch(err => { alert('複製失敗。'); });
         }
 
         window.onload = function() {
