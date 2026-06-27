@@ -160,7 +160,7 @@
         
         .checkbox-sub-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 6px;
             margin-top: 8px;
             padding-top: 8px;
@@ -524,26 +524,26 @@
                     <div><span class="didi-title">DIDI 案號</span><input type="text" id="didi_no" class="form-control" placeholder="輸入案號" oninput="updatePreview()"></div>
                 </div>
                 
-               <div class="checkbox-sub-grid" style="grid-template-columns: repeat(3, 1fr);">
-    <label class="checkbox-item" style="color: #3b82f6;">
-        <input type="checkbox" id="chk_flow_cif" onchange="updatePreview()"> <span>CIF紙本及電子檔</span>
-    </label>
-    <label class="checkbox-item" style="color: #10b981;">
-        <input type="checkbox" id="chk_flow_media" onchange="updatePreview()"> <span>影片照片</span>
-    </label>
-    <label class="checkbox-item" style="color: #f59e0b;">
-        <input type="checkbox" id="chk_flow_dtc" onchange="updatePreview()"> <span>故障碼</span>
-    </label>
-    <label class="checkbox-item" style="color: #8b5cf6;">
-        <input type="checkbox" id="chk_flow_clock" onchange="updatePreview()"> <span>打卡</span>
-    </label>
-    <label class="checkbox-item" style="color: #ec4899;">
-        <input type="checkbox" id="chk_flow_tsb" onchange="updatePreview()"> <span>TSB TSO</span>
-    </label>
-    <label class="checkbox-item" style="color: #14b8a6;">
-        <input type="checkbox" id="chk_flow_isolve" onchange="updatePreview()"> <span>Isolve</span>
-    </label>
-</div>
+                <div class="checkbox-sub-grid">
+                    <label class="checkbox-item" style="color: #3b82f6;">
+                        <input type="checkbox" id="chk_flow_cif" onchange="updatePreview()"> <span>CIF紙本及電子檔</span>
+                    </label>
+                    <label class="checkbox-item" style="color: #10b981;">
+                        <input type="checkbox" id="chk_flow_media" onchange="updatePreview()"> <span>影片照片</span>
+                    </label>
+                    <label class="checkbox-item" style="color: #f59e0b;">
+                        <input type="checkbox" id="chk_flow_dtc" onchange="updatePreview()"> <span>故障碼</span>
+                    </label>
+                    <label class="checkbox-item" style="color: #8b5cf6;">
+                        <input type="checkbox" id="chk_flow_clock" onchange="updatePreview()"> <span>打卡</span>
+                    </label>
+                    <label class="checkbox-item" style="color: #ec4899;">
+                        <input type="checkbox" id="chk_flow_tsb" onchange="updatePreview()"> <span>TSB TSO</span>
+                    </label>
+                    <label class="checkbox-item" style="color: #14b8a6;">
+                        <input type="checkbox" id="chk_flow_isolve" onchange="updatePreview()"> <span>Isolve</span>
+                    </label>
+                </div>
 
                 <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #cbd5e1; display: flex; flex-direction: column; gap: 6px;">
                     <label class="checkbox-item" style="color: var(--color-red); font-weight: 700;">
@@ -766,7 +766,7 @@
 
     <div class="modal-overlay" id="modal_core_1"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_1')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">壹、時間戳記與流程鐵律</div><ul class="modal-list"><li><strong>工單開立鐵律 (進廠日 = 診斷日)：</strong> 車輛進廠確認後，務必「先開立服務工單，方能做任何診斷與拆裝」。</li><li><strong>完工送件「7 天黃金期」：</strong> 維修完成後，必須於 7 天內在 DMS 系統中提交所賠申請。</li><li><strong>全流程「35 天極限」：</strong> 從車輛進廠「開單日」起算，至 DMS「送件日」止，整個保固案件生命週期必須在 35 天內結案完成。</li><li><strong>退件更正「5 天限時令」：</strong> 案件若因資料不齊遭原廠退件，同仁必須在 5 天內完成更正並重新上傳。</li></ul></div></div>
     <div class="modal-overlay" id="modal_core_2"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_2')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">貳、技術診斷與「預先授權」六大敏感邊界</div><table class="modal-table"><thead><tr><th style="width:50px;">編號</th><th style="width:140px;">項目</th><th>規範 / 基準</th></tr></thead><tbody><tr><td>1</td><td><strong>總維修費用超標</strong></td><td>單一保固案件之總維修費用高於台幣 85,000 元基準。</td></tr><tr><td>2</td><td><strong>漆面與防蝕相關</strong></td><td>所有與車身漆面品質、防鏽蝕穿孔保固相關的維修。</td></tr><tr><td>3</td><td><strong>未領牌車輛組件</strong></td><td>未領牌新車在 PDI 階段發現的短裝、錯裝領組件案件。</td></tr><tr><td>4</td><td><strong>特定技術文獻</strong></td><td>技術通報（TSB）或 TSO 條款中明確規定需要事前授權之項目。</td></tr><tr><td>5</td><td><strong>車輪與底盤整備</strong></td><td>車輪更換、底盤定位或平衡。</td></tr><tr><td>6</td><td><strong>核心動力核心</strong></td><td>大電池（牽引電池）的 any 維修與更換。</td></tr></tbody></table><div class="badge-warning"><strong>⚠️ 核銷極限：</strong>取得預先授權編號後，必須在 60 天內申請所賠，逾期取消。</div></div></div>
-    <div class="modal-overlay" id="modal_core_3"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_3')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">參、數位佐證矩陣與舊品保存規範</div><p style="font-size:13px; color:#00b4d8; font-weight:700;">1. DMS 出保必備之「數位佐證矩陣」</p><ul class="modal-list"><li><strong>完工交車單：</strong>必須填入明確的「完工日期」。</li><li><strong>完整簽名矩陣：</strong>具備客戶、技術、接待、終檢人員及廠長的完整簽名。</li><li><strong>維修打卡紀錄 (工時 ±20% 限制)：</strong>打卡時間不得高於或低於標準工時的 20%。</li><li><strong>零件發料明細表 / 車輛行照 / 視覺化故障影像：</strong>相片需清晰，錄影切勿超過 30秒。</li></ul><p style="font-size:13px; color:#10b981; font-weight:700; margin-top:10px;">2. 保固舊品 (故障件) 管理條款</p><ul class="modal-list"><li>廠內必須妥善保存 90 天，以防原廠隨時抽查、寄回。</li></ul></div></div>
+    <div class="modal-overlay" id="modal_core_3"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_3')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">參、數位佐證矩陣與舊品保存規範</div><p style="font-size:13px; color:#00b4d8; font-weight:700;">1. DMS 出保必備之「數位佐證矩陣」</p><ul class="modal-list"><li><strong>完工交車單：</strong>必須填入明確的「完工日期」。</li><li><strong>完整簽名矩陣：</strong>具備客戶、技術、接待、終檢人員及廠長的完整簽名。</li><li><strong>維修打卡紀錄 (工時 ±20% 限制)：</strong>打卡時間不得高於或低於標準工時 the 20%。</li><li><strong>零件發料明細表 / 車輛行照 / 視覺化故障影像：</strong>相片需清晰，錄影切勿超過 30秒。</li></ul><p style="font-size:13px; color:#10b981; font-weight:700; margin-top:10px;">2. 保固舊品 (故障件) 管理條款</p><ul class="modal-list"><li>廠內必須妥善保存 90 天，以防原廠隨時抽查、寄回。</li></ul></div></div>
     <div class="modal-overlay" id="modal_core_4"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_4')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">肆、原廠系統實作 (DMS / LinkEntry / Tempario)</div><p style="font-size:13px; font-weight:700; color:#f59e0b;">代碼缺失之「截圖回報機制」</p><ul class="modal-list"><li>系統中無對應之公制工時代碼，必須將 Tempario 完整截圖，以 Email 正式發送給管理團隊。<strong>嚴禁使用 Line 傳送</strong>。</li><li>針對車型代號為 F60F 的品質專案，原廠在出廠前已全數施作完成，各廠站直接免除執行。但若系統跳出 F538 專案，則必須確實實施。</li></ul></div></div>
     <div class="modal-overlay" id="modal_core_5"><div class="modal-content"><button class="modal-close" onclick="closeModal('modal_core_5')"><i class="fa-solid fa-xmark"></i></button><div class="modal-header-title">伍、2026 年度原廠保固稽核整備</div><ul class="modal-list"><li><strong>風暴啟動：</strong>2026 年度原廠保固稽核已正式啟動。</li><li><strong>即刻自查：</strong>各廠站自查前六個月（包含 2025 年底 11、12 月至當前 2026 年 6 月）的所有保固案件。</li><li><strong>追溯扣款風險：</strong>事後稽核一旦發現流程或資料不齊，將執行追溯扣款。</li></ul></div></div>
 
@@ -808,6 +808,8 @@
             document.getElementById('chk_flow_media').checked = false;
             document.getElementById('chk_flow_dtc').checked = false;
             document.getElementById('chk_flow_clock').checked = false;
+            document.getElementById('chk_flow_tsb').checked = false;
+            document.getElementById('chk_flow_isolve').checked = false;
             document.getElementById('chk_flow_postpone').checked = false;
             document.getElementById('chk_flow_auth_wait').checked = false;
             
@@ -918,6 +920,7 @@
             if (didi) idLine += `DIDI 案號: ${didi} `;
             if (idLine !== "") idLine += "\n";
 
+            // 1. 處理原有的四個隨機上傳項目 (有勾選才出字)
             let selectedItems = [];
             if (document.getElementById('chk_flow_cif').checked) selectedItems.push("CIF紙本及電子檔");
             if (document.getElementById('chk_flow_media').checked) selectedItems.push("影片照片");
@@ -927,6 +930,18 @@
             let didiGroupLine = "";
             if (selectedItems.length > 0) {
                 didiGroupLine = `【${selectedItems.join('、')}】以上傳DIDI群組\n`;
+            }
+
+            // 2. 核心邏輯修正：勾選後才觸發「有無TSB TSO」與「有無Isolve」的軌跡字樣
+            let techStatusLine = "";
+            const tsbChecked = document.getElementById('chk_flow_tsb').checked;
+            const isolveChecked = document.getElementById('chk_flow_isolve').checked;
+
+            if (tsbChecked || isolveChecked) {
+                let statusParts = [];
+                if (tsbChecked) statusParts.push("有無TSB TSO");
+                if (isolveChecked) statusParts.push("有無Isolve");
+                techStatusLine = `技術研判 ➔ 【${statusParts.join(' | ')}】\n`;
             }
 
             let postponeLine = "";
@@ -943,15 +958,20 @@
             const rawReason = document.getElementById('field_reason').value;
             const rawCheck = document.getElementById('field_check').value;
 
-            const finalInfo = `${headerLine}${idLine}${didiGroupLine}${postponeLine}${authWaitLine}${rawInfo}`;
+            const finalInfo = `${headerLine}${idLine}${didiGroupLine}${techStatusLine}${postponeLine}${authWaitLine}${rawInfo}`;
             document.getElementById('out_info').value = finalInfo;
             document.getElementById('out_reason').value = rawReason;
             document.getElementById('out_check').value = rawCheck;
 
             document.getElementById('out_combined_all').value = 
-`=== 欄位1：車主車輛故障信息 ===\n${finalInfo}\n
-=== 欄位2：檢修過程 ===\n${rawReason}\n
-=== 欄位3：檢查與處置 ===\n${rawCheck}`;
+`=== 欄位1：車主車輛故障信息 ===
+${finalInfo}
+
+=== 欄位2：檢修過程 ===
+${rawReason}
+
+=== 欄位3：檢查與處置 ===
+${rawCheck}`;
         }
 
         function copyAllFields() {
