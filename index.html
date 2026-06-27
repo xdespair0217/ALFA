@@ -524,20 +524,26 @@
                     <div><span class="didi-title">DIDI 案號</span><input type="text" id="didi_no" class="form-control" placeholder="輸入案號" oninput="updatePreview()"></div>
                 </div>
                 
-                <div class="checkbox-sub-grid">
-                    <label class="checkbox-item" style="color: #3b82f6;">
-                        <input type="checkbox" id="chk_flow_cif" onchange="updatePreview()"> <span>CIF紙本及電子檔</span>
-                    </label>
-                    <label class="checkbox-item" style="color: #10b981;">
-                        <input type="checkbox" id="chk_flow_media" onchange="updatePreview()"> <span>影片照片</span>
-                    </label>
-                    <label class="checkbox-item" style="color: #f59e0b;">
-                        <input type="checkbox" id="chk_flow_dtc" onchange="updatePreview()"> <span>故障碼</span>
-                    </label>
-                    <label class="checkbox-item" style="color: #8b5cf6;">
-                        <input type="checkbox" id="chk_flow_clock" onchange="updatePreview()"> <span>打卡</span>
-                    </label>
-                </div>
+               <div class="checkbox-sub-grid" style="grid-template-columns: repeat(3, 1fr);">
+    <label class="checkbox-item" style="color: #3b82f6;">
+        <input type="checkbox" id="chk_flow_cif" onchange="updatePreview()"> <span>CIF紙本及電子檔</span>
+    </label>
+    <label class="checkbox-item" style="color: #10b981;">
+        <input type="checkbox" id="chk_flow_media" onchange="updatePreview()"> <span>影片照片</span>
+    </label>
+    <label class="checkbox-item" style="color: #f59e0b;">
+        <input type="checkbox" id="chk_flow_dtc" onchange="updatePreview()"> <span>故障碼</span>
+    </label>
+    <label class="checkbox-item" style="color: #8b5cf6;">
+        <input type="checkbox" id="chk_flow_clock" onchange="updatePreview()"> <span>打卡</span>
+    </label>
+    <label class="checkbox-item" style="color: #ec4899;">
+        <input type="checkbox" id="chk_flow_tsb" onchange="updatePreview()"> <span>TSB TSO</span>
+    </label>
+    <label class="checkbox-item" style="color: #14b8a6;">
+        <input type="checkbox" id="chk_flow_isolve" onchange="updatePreview()"> <span>Isolve</span>
+    </label>
+</div>
 
                 <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #cbd5e1; display: flex; flex-direction: column; gap: 6px;">
                     <label class="checkbox-item" style="color: var(--color-red); font-weight: 700;">
