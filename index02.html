@@ -17,13 +17,13 @@
 </head>
 <body class="h-screen overflow-hidden flex flex-col p-6">
 
-    <!-- 頂部標頭列 -->
+    <!-- 頂部標頭列 (支援按鈕過多時自動折成多行) -->
     <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-800 pb-4 mb-4 gap-4">
         <div class="flex items-center space-x-4 shrink-0">
             <!-- 仿 Alfa 熱血紅圓標 -->
             <div class="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center font-black text-white text-xs tracking-wider shadow-md shadow-red-900/30">ALFA</div>
             <div>
-                <!-- 【新功能】車型切換下拉選單 -->
+                <!-- 車型切換下拉選單 -->
                 <div class="flex items-center space-x-2">
                     <label for="car-model-select" class="text-xs text-gray-400 font-bold">目前展示車型：</label>
                     <select id="car-model-select" onchange="switchCarModel(this.value)" class="bg-[#161b22] text-white border border-gray-700 rounded px-2 py-1 text-sm font-bold focus:outline-none focus:border-red-600 cursor-pointer">
@@ -34,7 +34,7 @@
             </div>
         </div>
         
-        <!-- 套餐切換鈕區域 (自動折行) -->
+        <!-- 套餐切換鈕區域 (自動折行，不限個數) -->
         <div id="package-tabs" class="flex flex-wrap gap-2 max-w-2xl justify-start lg:justify-center">
             <span class="text-sm text-gray-500">正在辨識保養套餐項目...</span>
         </div>
@@ -89,7 +89,8 @@
                 <h3 class="text-sm font-semibold text-gray-400 mb-4 tracking-wider flex items-center">
                     <span class="mr-2">🔧</span>套餐内含零件圖解 (點擊與左側表格聯動)
                 </h3>
-                <div id="image-grid" class="flex-1 grid grid-cols-2 gap-4 overflow-y-auto custom-scrollbar p-1">
+                <!-- 圖片網格加入滾動條，不論零件再多都會整齊排列、自動向下延伸 -->
+                <div id="image-grid" class="flex-1 grid grid-cols-2 gap-4 overflow-y-auto custom-scrollbar p-1 align-content-start">
                     <!-- 圖片卡片由 JavaScript 動態生成 -->
                 </div>
             </div>
@@ -106,22 +107,14 @@
     </main>
 
     <script>
-        // ==========================================
-        // 【多車型雲端網址對照表】—— 在此設定各車型的分頁網址！
-        // ==========================================
+        // ==========================================================
+        // 【多車型雲端網址對照表】
+        // 如果未來你有 Giulia 或是 Quadrifoglio 的分頁，請發布後把網址貼在下方對應位置：
+        // ==========================================================
         const CAR_MODELS_SHEETS = {
             "Stelvio Sprint 2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv",
-            "Giulia 2.0 (範例預設)": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv", // 未來可以貼上 Giulia 專屬分頁網址
-            "Stelvio QV (範例預設)": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv"
-        };
-
-        // 高質感零件對照圖片庫
-        const IMAGE_LIBRARY = {
-            "0055232574": "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=300&q=80", // 螺絲
-            "04892339BE": "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?auto=format&fit=crop&w=300&q=80", // 機油芯
-            "0077368519": "https://images.unsplash.com/photo-1558244661-d248897f7bc4?auto=format&fit=crop&w=300&q=80", // 粉塵芯
-            "1609337480": "https://images.unsplash.com/photo-1621259182978-f09e5e2ab09a?auto=format&fit=crop&w=300&q=80", // 汽油添加劑
-            "SH0030": "https://images.unsplash.com/photo-1621259182978-f09e5e2ab09a?auto=format&fit=crop&w=300&q=80"     // 機油
+            "Giulia 2.0 (設定範例)": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv",
+            "Stelvio QV (設定範例)": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv"
         };
 
         let allParsedPackages = {}; 
@@ -164,6 +157,7 @@
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
                 if (cols.length < 3) return;
 
+                // 檢查這一行是否有任何一個格子包含了「套餐」這兩個字
                 const foundPackageCell = cols.find(cell => cell && cell.includes("套餐"));
                 
                 if (foundPackageCell) {
@@ -251,11 +245,14 @@
                 `;
 
                 if (item.attr !== "工資" && item.partId) {
-                    const imgUrl = IMAGE_LIBRARY[item.partId] || "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?auto=format&fit=crop&w=300&q=80";
+                    // 自動讀取本地資料夾下的「料號.jpg」圖片
+                    // 如果找不到，就會預設使用一張高質感的預設零件佔位圖
+                    const imgUrl = `images/${item.partId}.jpg`;
+                    
                     gridHTML += `
                         <div id="card-${item.partId}" class="bg-[#1f242c] border border-gray-700 rounded-lg p-3 flex flex-col items-center justify-between transition-all cursor-pointer hover:border-gray-500 shadow-md" onclick="syncHighlight('${item.partId}')">
                             <div class="w-full h-24 bg-[#0d1117] rounded mb-2 flex items-center justify-center overflow-hidden">
-                                <img src="${imgUrl}" alt="${item.name}" class="object-cover w-full h-full opacity-80 hover:opacity-100 transition-opacity">
+                                <img src="${imgUrl}" alt="${item.name}" onerror="this.src='https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?auto=format&fit=crop&w=300&q=80'" class="object-cover w-full h-full opacity-80 hover:opacity-100 transition-opacity">
                             </div>
                             <div class="text-center w-full">
                                 <p class="text-[10px] text-gray-500 font-mono">${item.partId}</p>
