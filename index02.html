@@ -17,7 +17,7 @@
 </head>
 <body class="h-screen overflow-hidden flex flex-col p-6 relative">
 
-    <!-- 頂部標頭列 (支援按鈕過多時自動折成多行) -->
+    <!-- 頂部標頭列 -->
     <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-800 pb-4 mb-4 gap-4">
         <div class="flex items-center space-x-4 shrink-0">
             <!-- 仿 Alfa 熱血紅圓標 -->
@@ -67,7 +67,8 @@
                             <th class="p-3 text-right">單價</th>
                             <th class="p-3 text-right">數量</th>
                             <th class="p-3 text-right">折讓</th>
-                            <th class="p-3 text-right rounded-r-md">加總</th>
+                            <th class="p-3 text-right">加總</th>
+                            <th class="p-3 text-center rounded-r-md">層架</th> <!-- 【新增：層架欄位】 -->
                         </tr>
                     </thead>
                     <tbody id="table-rows">
@@ -76,9 +77,24 @@
                 </table>
             </div>
 
+            <!-- 【新增：工資、零件雙小計明細區】 -->
+            <div class="border-t border-gray-800 pt-4 mt-3 flex justify-between items-center text-xs text-gray-400">
+                <div class="flex space-x-6">
+                    <div>
+                        <span>工資小計 (Labor)：</span>
+                        <span id="labor-subtotal" class="font-bold text-gray-200 font-mono">$ 0</span>
+                    </div>
+                    <div class="border-l border-gray-800 pl-6">
+                        <span>零件小計 (Parts)：</span>
+                        <span id="parts-subtotal" class="font-bold text-gray-200 font-mono">$ 0</span>
+                    </div>
+                </div>
+                <div class="text-[10px] text-gray-500 font-mono">Formula Auto-calculated</div>
+            </div>
+
             <!-- 底部總計金額 -->
-            <div class="border-t border-gray-800 pt-4 mt-3 flex justify-between items-center">
-                <span class="text-gray-400 text-sm font-medium">套餐應付總金額 (Estimated Total)</span>
+            <div class="border-t border-gray-800 pt-3 mt-2 flex justify-between items-center">
+                <span class="text-gray-400 text-sm font-medium">套餐應付總金額 (Grand Total)</span>
                 <span id="package-total" class="text-3xl font-black text-green-400 font-mono tracking-tight">$ 0</span>
             </div>
         </section>
@@ -106,15 +122,12 @@
 
     </main>
 
-    <!-- 【新功能】高質感點擊燈箱彈出視窗 (Lightbox) -->
+    <!-- 高質感點擊燈箱彈出視窗 (Lightbox) -->
     <div id="lightbox" onclick="closeLightbox()" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col justify-center items-center p-4 cursor-zoom-out transition-opacity duration-300 opacity-0">
-        <!-- 關閉按鈕 -->
         <button class="absolute top-6 right-6 text-gray-400 hover:text-white text-4xl font-light focus:outline-none">&times;</button>
-        <!-- 燈箱大圖容器 -->
         <div class="max-w-4xl max-h-[80vh] flex items-center justify-center bg-[#161b22] p-2 rounded-lg border border-gray-800 shadow-2xl" onclick="event.stopPropagation()">
             <img id="lightbox-img" src="" alt="零件大圖" class="max-w-full max-h-[75vh] object-contain rounded">
         </div>
-        <!-- 燈箱零件名稱標題 -->
         <div class="mt-4 text-center" onclick="event.stopPropagation()">
             <p id="lightbox-part-id" class="text-xs text-gray-500 font-mono tracking-widest"></p>
             <h3 id="lightbox-title" class="text-lg font-bold text-white mt-1"></h3>
@@ -126,16 +139,13 @@
         // 【多車型雲端網址對照表】
         // ==========================================================
         const CAR_MODELS_SHEETS = {
-            "Stelvio Sprint 2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv",
-            "Giulia 2.0 (設定範例)": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv",
-            "Stelvio QV (設定範例)": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv"
+            "Stelvio Sprint 2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv"
         };
 
         let allParsedPackages = {}; 
         let currentPackageKey = "";
         let selectedModel = Object.keys(CAR_MODELS_SHEETS)[0];
 
-        // 初始化車型下拉選單
         function initCarModelSelect() {
             const selectEl = document.getElementById('car-model-select');
             selectEl.innerHTML = Object.keys(CAR_MODELS_SHEETS).map(model => `
@@ -143,7 +153,6 @@
             `).join('');
         }
 
-        // 切換不同車型時，重新抓取對應分頁的試算表
         function switchCarModel(modelName) {
             selectedModel = modelName;
             document.getElementById('package-tabs').innerHTML = '<span class="text-sm text-gray-500">正在切換車型並讀取雲端資料...</span>';
@@ -191,11 +200,12 @@
                     const qty = cols[4] || "";
                     const discount = cols[5] || "";
                     const subtotal = cols[6] || "";
+                    const location = cols[7] || ""; // 第 8 欄：層架 (H 欄)
 
                     const cleanSubtotal = parseFloat(subtotal.replace(/[^0-9.-]+/g, "")) || 0;
 
                     packages[currentPackageName].items.push({
-                        attr, partId, name, price, qty, discount, subtotal, cleanSubtotal
+                        attr, partId, name, price, qty, discount, subtotal, cleanSubtotal, location
                     });
                 }
             });
@@ -240,20 +250,40 @@
             
             let tableHTML = '';
             let gridHTML = '';
-            let calcTotal = 0;
+            
+            // 獨立變數用於動態計算金額
+            let laborTotal = 0;
+            let partsTotal = 0;
 
             pkg.items.forEach(item => {
-                calcTotal += item.cleanSubtotal;
+                // 區分工資與零件加總
+                if (item.attr === "工資") {
+                    laborTotal += item.cleanSubtotal;
+                } else {
+                    partsTotal += item.cleanSubtotal;
+                }
+
+                // 定義屬性的標籤樣式 (工資用灰色標籤，零件用紅色標籤)
+                const isLabor = item.attr === "工資";
+                const attrBadgeClass = isLabor 
+                    ? "bg-slate-800 text-slate-300 border border-slate-700"
+                    : "bg-red-950/60 text-red-400 border border-red-900/50";
 
                 tableHTML += `
-                    <tr id="row-${item.partId}" class="border-b border-gray-800 hover:bg-[#1f242c] transition-colors cursor-pointer" onclick="syncHighlight('${item.partId}')">
-                        <td class="p-3 text-xs text-gray-400 font-medium">${item.attr}</td>
-                        <td class="p-3 font-mono text-xs text-gray-300">${item.partId}</td>
+                    <tr id="row-${item.partId}" class="border-b border-gray-800 hover:bg-[#1f242c] transition-colors cursor-pointer text-xs" onclick="syncHighlight('${item.partId}')">
+                        <td class="p-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${attrBadgeClass}">
+                                ${item.attr}
+                            </span>
+                        </td>
+                        <td class="p-3 font-mono text-gray-300">${item.partId}</td>
                         <td class="p-3 text-white font-medium">${item.name}</td>
-                        <td class="p-3 text-right font-mono">${item.price}</td>
-                        <td class="p-3 text-right font-mono">${item.qty}</td>
+                        <td class="p-3 text-right font-mono text-gray-300">${item.price}</td>
+                        <td class="p-3 text-right font-mono text-gray-300">${item.qty}</td>
                         <td class="p-3 text-right font-mono text-gray-400">${item.discount}</td>
                         <td class="p-3 text-right font-mono font-bold text-green-400">${item.subtotal}</td>
+                        <!-- 層架欄位顯示 -->
+                        <td class="p-3 text-center font-mono text-amber-500 font-semibold">${item.location || '-'}</td>
                     </tr>
                 `;
 
@@ -263,14 +293,8 @@
                     
                     gridHTML += `
                         <div id="card-${item.partId}" class="bg-[#1f242c] border border-gray-700 rounded-lg p-3 flex flex-col items-center justify-between transition-all cursor-pointer hover:border-gray-500 shadow-md" onclick="syncHighlight('${item.partId}')">
-                            <!-- 
-                              【核心改進一】：
-                              圖片改用 object-contain 與 bg-[#0d1117] 深色底。
-                              圖片不論多寬多高，皆能「等比例完美縮小並置中呈現」，絕不切邊、不拉伸。
-                            -->
                             <div class="w-full h-28 bg-[#0d1117] rounded mb-2 flex items-center justify-center overflow-hidden relative group" onclick="openLightbox('${imgUrl}', '${item.partId}', '${item.name}', '${defaultImg}')">
                                 <img src="${imgUrl}" alt="${item.name}" onerror="this.src='${defaultImg}'" class="object-contain w-full h-full p-1 opacity-85 group-hover:opacity-100 transition-opacity">
-                                <!-- 滑鼠懸停時的放大提示微勳章 -->
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded">
                                     <span class="text-xs text-white bg-red-600/90 px-2 py-1 rounded shadow">🔍 點擊看大圖</span>
                                 </div>
@@ -284,9 +308,17 @@
                 }
             });
 
+            // 渲染左側表格與右側圖片牆
             document.getElementById('table-rows').innerHTML = tableHTML;
             document.getElementById('image-grid').innerHTML = gridHTML;
-            document.getElementById('package-total').innerText = `$ ${calcTotal.toLocaleString()}`;
+
+            // 計算最終 Grand Total
+            const grandTotal = laborTotal + partsTotal;
+
+            // 寫入工資、零件與總計金額
+            document.getElementById('labor-subtotal').innerText = `$ ${laborTotal.toLocaleString()}`;
+            document.getElementById('parts-subtotal').innerText = `$ ${partsTotal.toLocaleString()}`;
+            document.getElementById('package-total').innerText = `$ ${grandTotal.toLocaleString()}`;
         }
 
         function syncHighlight(partId) {
@@ -299,16 +331,12 @@
             if (card) card.classList.add('active-card');
         }
 
-        // ==========================================================
-        // 【核心改進二】：高質感燈箱（Lightbox）控制邏輯
-        // ==========================================================
         function openLightbox(imgSrc, partId, title, defaultImg) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const lightboxPartId = document.getElementById('lightbox-part-id');
             const lightboxTitle = document.getElementById('lightbox-title');
 
-            // 預載圖片以防破圖
             lightboxImg.src = imgSrc;
             lightboxImg.onerror = function() {
                 this.src = defaultImg;
@@ -317,23 +345,21 @@
             lightboxPartId.innerText = partId;
             lightboxTitle.innerText = title;
 
-            // 顯示動畫效果
             lightbox.classList.remove('hidden');
             setTimeout(() => {
                 lightbox.classList.remove('opacity-0');
             }, 10);
         }
 
+        // 關閉燈箱
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
             lightbox.classList.add('opacity-0');
-            // 等淡出動畫跑完後再隱藏
             setTimeout(() => {
                 lightbox.classList.add('hidden');
             }, 300);
         }
 
-        // 鍵盤 ESC 鍵安全關閉燈箱
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 closeLightbox();
