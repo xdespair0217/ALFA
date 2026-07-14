@@ -68,7 +68,7 @@
                             <th class="p-3 text-right">數量</th>
                             <th class="p-3 text-right">折讓</th>
                             <th class="p-3 text-right">加總</th>
-                            <th class="p-3 text-center rounded-r-md">層架</th> <!-- 【新增：層架欄位】 -->
+                            <th class="p-3 text-center rounded-r-md">層架</th>
                         </tr>
                     </thead>
                     <tbody id="table-rows">
@@ -77,24 +77,46 @@
                 </table>
             </div>
 
-            <!-- 【新增：工資、零件雙小計明細區】 -->
-            <div class="border-t border-gray-800 pt-4 mt-3 flex justify-between items-center text-xs text-gray-400">
-                <div class="flex space-x-6">
+            <!-- 工資、零件雙小計明細區 + 零件折扣輸入控制列 -->
+            <div class="border-t border-gray-800 pt-4 mt-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs text-gray-400">
+                <div class="flex flex-wrap space-x-6">
                     <div>
                         <span>工資小計 (Labor)：</span>
                         <span id="labor-subtotal" class="font-bold text-gray-200 font-mono">$ 0</span>
                     </div>
                     <div class="border-l border-gray-800 pl-6">
-                        <span>零件小計 (Parts)：</span>
-                        <span id="parts-subtotal" class="font-bold text-gray-200 font-mono">$ 0</span>
+                        <span>零件原始總價：</span>
+                        <span id="parts-original-total" class="font-bold text-gray-200 font-mono">$ 0</span>
+                    </div>
+                    <div class="border-l border-gray-800 pl-6">
+                        <span>零件折後實計：</span>
+                        <span id="parts-subtotal" class="font-bold text-amber-500 font-mono">$ 0</span>
                     </div>
                 </div>
-                <div class="text-[10px] text-gray-500 font-mono">Formula Auto-calculated</div>
+
+                <!-- 零件折扣趴數輸入框 -->
+                <div class="flex items-center space-x-2 bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-1.5 shrink-0">
+                    <span class="text-[11px] text-gray-400 font-bold">🛠️ 零件折扣比率：</span>
+                    <input 
+                        type="number" 
+                        id="part-discount-input" 
+                        value="100" 
+                        min="0" 
+                        max="100" 
+                        step="5"
+                        oninput="calculateTotalsWithDiscount()"
+                        class="w-12 bg-[#161b22] text-center text-white text-xs font-bold focus:outline-none border-b border-red-600 focus:border-red-500 font-mono"
+                    >
+                    <span class="text-[11px] text-gray-300 font-bold">%</span>
+                </div>
             </div>
 
             <!-- 底部總計金額 -->
             <div class="border-t border-gray-800 pt-3 mt-2 flex justify-between items-center">
-                <span class="text-gray-400 text-sm font-medium">套餐應付總金額 (Grand Total)</span>
+                <div class="flex flex-col">
+                    <span class="text-gray-400 text-sm font-medium">套餐應付總金額 (Grand Total)</span>
+                    <span id="discount-note" class="text-[10px] text-amber-500/80 font-medium mt-0.5 hidden">＊已套用零件折扣</span>
+                </div>
                 <span id="package-total" class="text-3xl font-black text-green-400 font-mono tracking-tight">$ 0</span>
             </div>
         </section>
@@ -105,7 +127,6 @@
                 <h3 class="text-sm font-semibold text-gray-400 mb-4 tracking-wider flex items-center">
                     <span class="mr-2">🔧</span>套餐内含零件圖解 (點擊表格高亮，點擊圖片彈出大圖)
                 </h3>
-                <!-- 圖片網格加入滾動條，自動向下延伸 -->
                 <div id="image-grid" class="flex-1 grid grid-cols-2 gap-4 overflow-y-auto custom-scrollbar p-1 align-content-start">
                     <!-- 圖片卡片由 JavaScript 動態生成 -->
                 </div>
@@ -128,9 +149,14 @@
         <div class="max-w-4xl max-h-[80vh] flex items-center justify-center bg-[#161b22] p-2 rounded-lg border border-gray-800 shadow-2xl" onclick="event.stopPropagation()">
             <img id="lightbox-img" src="" alt="零件大圖" class="max-w-full max-h-[75vh] object-contain rounded">
         </div>
-        <div class="mt-4 text-center" onclick="event.stopPropagation()">
+        <div class="mt-4 text-center max-w-xl" onclick="event.stopPropagation()">
             <p id="lightbox-part-id" class="text-xs text-gray-500 font-mono tracking-widest"></p>
             <h3 id="lightbox-title" class="text-lg font-bold text-white mt-1"></h3>
+            <!-- 【新增：燈箱內說明的連動呈現區塊】 -->
+            <div id="lightbox-desc-container" class="mt-3 px-4 py-2 bg-amber-950/40 border border-amber-900/50 rounded-lg text-amber-400 text-xs hidden leading-relaxed">
+                <span class="font-bold block text-amber-500 text-[10px] tracking-wider uppercase mb-0.5">⚠️ 現場維護說明 NOTE</span>
+                <span id="lightbox-desc-text"></span>
+            </div>
         </div>
     </div>
 
@@ -145,6 +171,9 @@
         let allParsedPackages = {}; 
         let currentPackageKey = "";
         let selectedModel = Object.keys(CAR_MODELS_SHEETS)[0];
+
+        let rawLaborSum = 0;
+        let rawPartsSum = 0;
 
         function initCarModelSelect() {
             const selectEl = document.getElementById('car-model-select');
@@ -200,12 +229,13 @@
                     const qty = cols[4] || "";
                     const discount = cols[5] || "";
                     const subtotal = cols[6] || "";
-                    const location = cols[7] || ""; // 第 8 欄：層架 (H 欄)
+                    const location = cols[7] || ""; // H 欄：層架位置
+                    const description = cols[9] || ""; // J 欄：備註說明 (第 10 欄)
 
                     const cleanSubtotal = parseFloat(subtotal.replace(/[^0-9.-]+/g, "")) || 0;
 
                     packages[currentPackageName].items.push({
-                        attr, partId, name, price, qty, discount, subtotal, cleanSubtotal, location
+                        attr, partId, name, price, qty, discount, subtotal, cleanSubtotal, location, description
                     });
                 }
             });
@@ -251,19 +281,16 @@
             let tableHTML = '';
             let gridHTML = '';
             
-            // 獨立變數用於動態計算金額
-            let laborTotal = 0;
-            let partsTotal = 0;
+            rawLaborSum = 0;
+            rawPartsSum = 0;
 
             pkg.items.forEach(item => {
-                // 區分工資與零件加總
                 if (item.attr === "工資") {
-                    laborTotal += item.cleanSubtotal;
+                    rawLaborSum += item.cleanSubtotal;
                 } else {
-                    partsTotal += item.cleanSubtotal;
+                    rawPartsSum += item.cleanSubtotal;
                 }
 
-                // 定義屬性的標籤樣式 (工資用灰色標籤，零件用紅色標籤)
                 const isLabor = item.attr === "工資";
                 const attrBadgeClass = isLabor 
                     ? "bg-slate-800 text-slate-300 border border-slate-700"
@@ -282,7 +309,6 @@
                         <td class="p-3 text-right font-mono text-gray-300">${item.qty}</td>
                         <td class="p-3 text-right font-mono text-gray-400">${item.discount}</td>
                         <td class="p-3 text-right font-mono font-bold text-green-400">${item.subtotal}</td>
-                        <!-- 層架欄位顯示 -->
                         <td class="p-3 text-center font-mono text-amber-500 font-semibold">${item.location || '-'}</td>
                     </tr>
                 `;
@@ -291,9 +317,12 @@
                     const imgUrl = `${item.partId}.jpg`;
                     const defaultImg = "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?auto=format&fit=crop&w=300&q=80";
                     
+                    // 用 JSON 安全字串化說明欄內容，以防字元衝突
+                    const safeDesc = encodeURIComponent(item.description || "");
+
                     gridHTML += `
                         <div id="card-${item.partId}" class="bg-[#1f242c] border border-gray-700 rounded-lg p-3 flex flex-col items-center justify-between transition-all cursor-pointer hover:border-gray-500 shadow-md" onclick="syncHighlight('${item.partId}')">
-                            <div class="w-full h-28 bg-[#0d1117] rounded mb-2 flex items-center justify-center overflow-hidden relative group" onclick="openLightbox('${imgUrl}', '${item.partId}', '${item.name}', '${defaultImg}')">
+                            <div class="w-full h-28 bg-[#0d1117] rounded mb-2 flex items-center justify-center overflow-hidden relative group" onclick="openLightbox('${imgUrl}', '${item.partId}', '${item.name}', '${defaultImg}', '${safeDesc}')">
                                 <img src="${imgUrl}" alt="${item.name}" onerror="this.src='${defaultImg}'" class="object-contain w-full h-full p-1 opacity-85 group-hover:opacity-100 transition-opacity">
                                 <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded">
                                     <span class="text-xs text-white bg-red-600/90 px-2 py-1 rounded shadow">🔍 點擊看大圖</span>
@@ -308,17 +337,35 @@
                 }
             });
 
-            // 渲染左側表格與右側圖片牆
             document.getElementById('table-rows').innerHTML = tableHTML;
             document.getElementById('image-grid').innerHTML = gridHTML;
 
-            // 計算最終 Grand Total
-            const grandTotal = laborTotal + partsTotal;
+            calculateTotalsWithDiscount();
+        }
 
-            // 寫入工資、零件與總計金額
-            document.getElementById('labor-subtotal').innerText = `$ ${laborTotal.toLocaleString()}`;
-            document.getElementById('parts-subtotal').innerText = `$ ${partsTotal.toLocaleString()}`;
+        function calculateTotalsWithDiscount() {
+            const discountInput = document.getElementById('part-discount-input');
+            let discountRate = parseFloat(discountInput.value);
+
+            if (isNaN(discountRate) || discountRate < 0) {
+                discountRate = 100;
+            }
+
+            const discountedPartsSum = Math.round(rawPartsSum * (discountRate / 100));
+            const grandTotal = rawLaborSum + discountedPartsSum;
+
+            document.getElementById('labor-subtotal').innerText = `$ ${rawLaborSum.toLocaleString()}`;
+            document.getElementById('parts-original-total').innerText = `$ ${rawPartsSum.toLocaleString()}`;
+            document.getElementById('parts-subtotal').innerText = `$ ${discountedPartsSum.toLocaleString()}`;
             document.getElementById('package-total').innerText = `$ ${grandTotal.toLocaleString()}`;
+
+            const discountNote = document.getElementById('discount-note');
+            if (discountRate < 100) {
+                discountNote.innerText = `＊已套用 ${discountRate}% 零件折扣`;
+                discountNote.classList.remove('hidden');
+            } else {
+                discountNote.classList.add('hidden');
+            }
         }
 
         function syncHighlight(partId) {
@@ -331,11 +378,19 @@
             if (card) card.classList.add('active-card');
         }
 
-        function openLightbox(imgSrc, partId, title, defaultImg) {
+        // ==========================================================
+        // 【優化燈箱控制】：連動呈現 Excel 中的說明欄 (J 欄)
+        // ==========================================================
+        function openLightbox(imgSrc, partId, title, defaultImg, encodedDesc) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const lightboxPartId = document.getElementById('lightbox-part-id');
             const lightboxTitle = document.getElementById('lightbox-title');
+            
+            // 說明欄解碼
+            const description = decodeURIComponent(encodedDesc).trim();
+            const descContainer = document.getElementById('lightbox-desc-container');
+            const descText = document.getElementById('lightbox-desc-text');
 
             lightboxImg.src = imgSrc;
             lightboxImg.onerror = function() {
@@ -345,13 +400,20 @@
             lightboxPartId.innerText = partId;
             lightboxTitle.innerText = title;
 
+            // 如果說明欄 (J欄) 含有備註，則顯示在燈箱中；空值則隱藏
+            if (description) {
+                descText.innerText = description;
+                descContainer.classList.remove('hidden');
+            } else {
+                descContainer.classList.add('hidden');
+            }
+
             lightbox.classList.remove('hidden');
             setTimeout(() => {
                 lightbox.classList.remove('opacity-0');
             }, 10);
         }
 
-        // 關閉燈箱
         function closeLightbox() {
             const lightbox = document.getElementById('lightbox');
             lightbox.classList.add('opacity-0');
