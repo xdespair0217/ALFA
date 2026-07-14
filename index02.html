@@ -89,7 +89,7 @@
                 <h3 class="text-sm font-semibold text-gray-400 mb-4 tracking-wider flex items-center">
                     <span class="mr-2">🔧</span>套餐内含零件圖解 (點擊與左側表格聯動)
                 </h3>
-                <!-- 圖片網格加入滾動條，不論零件再多都會整齊排列、自動向下延伸 -->
+                <!-- 圖片網格加入滾動條，自動向下延伸 -->
                 <div id="image-grid" class="flex-1 grid grid-cols-2 gap-4 overflow-y-auto custom-scrollbar p-1 align-content-start">
                     <!-- 圖片卡片由 JavaScript 動態生成 -->
                 </div>
@@ -109,7 +109,6 @@
     <script>
         // ==========================================================
         // 【多車型雲端網址對照表】
-        // 如果未來你有 Giulia 或是 Quadrifoglio 的分頁，請發布後把網址貼在下方對應位置：
         // ==========================================================
         const CAR_MODELS_SHEETS = {
             "Stelvio Sprint 2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv",
@@ -245,9 +244,9 @@
                 `;
 
                 if (item.attr !== "工資" && item.partId) {
-                    // 自動讀取本地資料夾下的「料號.jpg」圖片
-                    // 如果找不到，就會預設使用一張高質感的預設零件佔位圖
-                    const imgUrl = `images/${item.partId}.jpg`;
+                    // 【圖片對應路徑優化】
+                    // 不開新資料夾，直接從網頁的同一個資料夾底下抓取「料號.jpg」
+                    const imgUrl = `${item.partId}.jpg`;
                     
                     gridHTML += `
                         <div id="card-${item.partId}" class="bg-[#1f242c] border border-gray-700 rounded-lg p-3 flex flex-col items-center justify-between transition-all cursor-pointer hover:border-gray-500 shadow-md" onclick="syncHighlight('${item.partId}')">
