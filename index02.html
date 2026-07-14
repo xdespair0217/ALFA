@@ -152,7 +152,7 @@
         <div class="mt-4 text-center max-w-xl" onclick="event.stopPropagation()">
             <p id="lightbox-part-id" class="text-xs text-gray-500 font-mono tracking-widest"></p>
             <h3 id="lightbox-title" class="text-lg font-bold text-white mt-1"></h3>
-            <!-- 【新增：燈箱內說明的連動呈現區塊】 -->
+            <!-- 燈箱內說明的連動呈現區 -->
             <div id="lightbox-desc-container" class="mt-3 px-4 py-2 bg-amber-950/40 border border-amber-900/50 rounded-lg text-amber-400 text-xs hidden leading-relaxed">
                 <span class="font-bold block text-amber-500 text-[10px] tracking-wider uppercase mb-0.5">⚠️ 現場維護說明 NOTE</span>
                 <span id="lightbox-desc-text"></span>
@@ -229,8 +229,8 @@
                     const qty = cols[4] || "";
                     const discount = cols[5] || "";
                     const subtotal = cols[6] || "";
-                    const location = cols[7] || ""; // H 欄：層架位置
-                    const description = cols[9] || ""; // J 欄：備註說明 (第 10 欄)
+                    const location = cols[7] || ""; // H 欄：層架
+                    const description = cols[9] || ""; // J 欄：說明
 
                     const cleanSubtotal = parseFloat(subtotal.replace(/[^0-9.-]+/g, "")) || 0;
 
@@ -317,7 +317,6 @@
                     const imgUrl = `${item.partId}.jpg`;
                     const defaultImg = "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?auto=format&fit=crop&w=300&q=80";
                     
-                    // 用 JSON 安全字串化說明欄內容，以防字元衝突
                     const safeDesc = encodeURIComponent(item.description || "");
 
                     gridHTML += `
@@ -378,16 +377,12 @@
             if (card) card.classList.add('active-card');
         }
 
-        // ==========================================================
-        // 【優化燈箱控制】：連動呈現 Excel 中的說明欄 (J 欄)
-        // ==========================================================
         function openLightbox(imgSrc, partId, title, defaultImg, encodedDesc) {
             const lightbox = document.getElementById('lightbox');
             const lightboxImg = document.getElementById('lightbox-img');
             const lightboxPartId = document.getElementById('lightbox-part-id');
             const lightboxTitle = document.getElementById('lightbox-title');
             
-            // 說明欄解碼
             const description = decodeURIComponent(encodedDesc).trim();
             const descContainer = document.getElementById('lightbox-desc-container');
             const descText = document.getElementById('lightbox-desc-text');
@@ -400,7 +395,6 @@
             lightboxPartId.innerText = partId;
             lightboxTitle.innerText = title;
 
-            // 如果說明欄 (J欄) 含有備註，則顯示在燈箱中；空值則隱藏
             if (description) {
                 descText.innerText = description;
                 descContainer.classList.remove('hidden');
