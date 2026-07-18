@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alfa Romeo 專業多車型保養看板 (動態分頁修復版)</title>
+    <title>Alfa Romeo 專業多車型保養看板</title>
     <!-- 使用 Tailwind CSS 打造高質感暗色風格 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -27,10 +27,10 @@
                 <div class="flex items-center space-x-2">
                     <label for="car-model-select" class="text-xs text-gray-400 font-bold">目前展示車型：</label>
                     <select id="car-model-select" onchange="switchCarModel(this.value)" class="bg-[#161b22] text-white border border-gray-700 rounded px-2 py-1 text-sm font-bold focus:outline-none focus:border-red-600 cursor-pointer">
-                        <option value="">正在動態搜尋雲端車型分頁...</option>
+                        <!-- 由 JavaScript 自動帶入車型清單 -->
                     </select>
                 </div>
-                <p class="text-[10px] text-gray-500 mt-1">數據來源：Google 雲端同步試算表（自動偵測多分頁架構）</p>
+                <p class="text-[10px] text-gray-500 mt-1">數據來源：Google 雲端同步試算表（獨立分頁精準連線）</p>
             </div>
         </div>
         
@@ -161,138 +161,98 @@
 
     <script>
         // ==========================================================
-        // 🔗 請確保下方網址是你發布「整個文件」的 CSV 網址
+        // 🛠️ 【修復核心】：改回獨立分頁對照表，確保各分頁內容 100% 精準載入
+        // 如果未來你有新增分頁，只需去試算表單獨發布該分頁，並在下方加上一行即可
         // ==========================================================
-        const GOOGLE_SHEET_GLOBAL_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?output=csv";
+        const CAR_MODELS_SHEETS = {
+            "STELVIO_2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv",
+            "GIULIA SPRINT _2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=1943015509&single=true&output=csv",
+            "STELVIO_QV": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=1334614275&single=true&output=csv"
+        };
 
-        let DATABASE = {}; 
-        let selectedModel = "";
+        let allParsedPackages = {}; 
         let currentPackageKey = "";
+        let selectedModel = Object.keys(CAR_MODELS_SHEETS)[0];
         let rawLaborSum = 0;
         let rawPartsSum = 0;
 
+        // 初始化下拉選單
+        function initCarModelSelect() {
+            const selectEl = document.getElementById('car-model-select');
+            selectEl.innerHTML = Object.keys(CAR_MODELS_SHEETS).map(model => `
+                <option value="${model}" ${model === selectedModel ? 'selected' : ''}>${model}</option>
+            `).join('');
+        }
+
+        // 切換車型
+        function switchCarModel(modelName) {
+            selectedModel = modelName;
+            document.getElementById('package-tabs').innerHTML = '<span class="text-sm text-gray-500">正在讀取雲端資料...</span>';
+            fetchSheetData();
+        }
+
+        // 從對應網址抓取 CSV
         async function fetchSheetData() {
+            const targetUrl = CAR_MODELS_SHEETS[selectedModel];
             try {
-                const response = await fetch(GOOGLE_SHEET_GLOBAL_URL + "&cachebust=" + new Date().getTime());
+                const response = await fetch(targetUrl + "&cachebust=" + new Date().getTime());
                 const csvText = await response.text();
-                parseGlobalCSV(csvText);
+                parseExcelCSV(csvText);
             } catch (error) {
-                console.error("智慧搜尋雲端車型失敗:", error);
-                document.getElementById('current-package-title').innerText = "❌ 雲端整合資料讀取失敗，請確認是否發布「整個文件」";
+                console.error("抓取雲端資料失敗:", error);
+                document.getElementById('current-package-title').innerText = "❌ 雲端資料加載失敗，請檢查網路連線";
             }
         }
 
-        // 精準多車型、多套餐動態辨識引擎
-        function parseGlobalCSV(csvText) {
+        // 解析單一分頁內的所有套餐
+        function parseExcelCSV(csvText) {
             const lines = csvText.split(/\r?\n/);
-            const tempDatabase = {};
-            
-            // 預設你的車型列表，當資料流切換到該區塊時自動分類
-            const KNOWN_MODELS = ["STELVIO_2.0", "GIULIA SPRINT _2.0", "STELVIO_QV"];
-            let currentModelName = KNOWN_MODELS[0]; 
-            let currentPackageName = "";
+            const packages = {};
+            let currentPackageName = ""; 
 
             lines.forEach((line) => {
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
-                if (cols.length < 2) return;
+                if (cols.length < 3) return;
 
-                // 🌟 改進點 1：自動比對是不是換到了新車型分頁的開頭
-                const contentStr = cols.join(" ");
-                for (const model of KNOWN_MODELS) {
-                    if (contentStr.includes(model) && !contentStr.includes("套餐")) {
-                        currentModelName = model;
-                        currentPackageName = "";
-                        break;
-                    }
-                }
-
-                if (!tempDatabase[currentModelName]) {
-                    tempDatabase[currentModelName] = {};
-                }
-
-                // 📦 偵測套餐區塊
                 const foundPackageCell = cols.find(cell => cell && cell.includes("套餐"));
+                
                 if (foundPackageCell) {
                     currentPackageName = foundPackageCell;
-                    tempDatabase[currentModelName][currentPackageName] = {
+                    packages[currentPackageName] = {
                         name: currentPackageName,
                         items: []
                     };
                     return;
                 }
 
-                // 🔧 提取明細
                 const attr = cols[0] || "";
                 const partId = cols[1] || "";
                 const name = cols[2] || "";
 
-                if (currentPackageName && partId && partId !== "料號" && attr !== "屬性" && attr !== "總表") {
+                if (currentPackageName && partId && partId !== "料號" && attr !== "屬性") {
                     const price = cols[3] || "";
                     const qty = cols[4] || "";
                     const discount = cols[5] || "";
                     const subtotal = cols[6] || "";
                     const location = cols[7] || ""; 
-                    const description = cols[9] || ""; // J 欄
+                    const description = cols[9] || ""; // J 欄說明
 
                     const cleanSubtotal = parseFloat(subtotal.replace(/[^0-9.-]+/g, "")) || 0;
 
-                    tempDatabase[currentModelName][currentPackageName].items.push({
+                    packages[currentPackageName].items.push({
                         attr, partId, name, price, qty, discount, subtotal, cleanSubtotal, location, description
                     });
                 }
             });
 
-            // 清理空分頁並載入資料庫
-            DATABASE = {};
-            Object.keys(tempDatabase).forEach(model => {
-                if (Object.keys(tempDatabase[model]).length > 0) {
-                    DATABASE[model] = tempDatabase[model];
-                }
-            });
+            allParsedPackages = packages;
 
-            renderCarModelSelect();
-        }
-
-        function renderCarModelSelect() {
-            const selectEl = document.getElementById('car-model-select');
-            const models = Object.keys(DATABASE);
-
-            if (models.length === 0) {
-                // 防呆：如果完全沒抓到，直接強塞你試算表的真實分頁名稱
-                selectEl.innerHTML = `
-                    <option value="STELVIO_2.0">STELVIO_2.0</option>
-                    <option value="GIULIA SPRINT _2.0">GIULIA SPRINT _2.0</option>
-                    <option value="STELVIO_QV">STELVIO_QV</option>
-                `;
-                return;
-            }
-
-            if (!selectedModel || !DATABASE[selectedModel]) {
-                selectedModel = models[0];
-            }
-
-            selectEl.innerHTML = models.map(model => `
-                <option value="${model}" ${model === selectedModel ? 'selected' : ''}>${model}</option>
-            `).join('');
-
-            loadPackagesForModel(selectedModel);
-        }
-
-        function switchCarModel(modelName) {
-            if (!DATABASE[modelName]) return;
-            selectedModel = modelName;
-            loadPackagesForModel(selectedModel);
-        }
-
-        function loadPackagesForModel(modelName) {
-            const packages = DATABASE[modelName] || {};
-            const keys = Object.keys(packages);
-
+            const keys = Object.keys(allParsedPackages);
             if (keys.length > 0) {
                 renderTabs(keys);
                 switchPackage(keys[0]);
             } else {
-                document.getElementById('package-tabs').innerHTML = '<span class="text-xs text-gray-500">此車型內無有效套餐</span>';
+                document.getElementById('current-package-title').innerText = "⚠️ 找不到任何套餐項目，請確認此分頁資料格式";
                 clearDisplay();
             }
         }
@@ -307,8 +267,7 @@
         }
 
         function switchPackage(key) {
-            const packages = DATABASE[selectedModel] || {};
-            if (!packages[key]) return;
+            if (!allParsedPackages[key]) return;
 
             if (currentPackageKey) {
                 const prevTab = document.getElementById(`tab-${currentPackageKey}`);
@@ -318,7 +277,7 @@
             if (activeTab) activeTab.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-red-600 text-white shadow-lg border border-red-500 whitespace-nowrap";
 
             currentPackageKey = key;
-            const pkg = packages[key];
+            const pkg = allParsedPackages[key];
 
             document.getElementById('current-package-title').innerHTML = `<span class="w-2 h-5 bg-red-600 inline-block mr-2 rounded-sm"></span>${pkg.name}`;
             
@@ -461,6 +420,8 @@
             if (event.key === 'Escape') closeLightbox();
         });
 
+        // 啟動排版
+        initCarModelSelect();
         fetchSheetData();
     </script>
 </body>
