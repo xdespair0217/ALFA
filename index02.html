@@ -161,13 +161,13 @@
 
     <script>
         // ==========================================================
-        // 🛠️ 【修復核心】：改回獨立分頁對照表，確保各分頁內容 100% 精準載入
-        // 如果未來你有新增分頁，只需去試算表單獨發布該分頁，並在下方加上一行即可
+        // 🎯【完美網址資料庫對照表】
+        // 已將個別分頁的雲端網址精準對齊，並校正 QV 分頁的 CSV 數據接口路徑
         // ==========================================================
         const CAR_MODELS_SHEETS = {
             "STELVIO_2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv",
-            "GIULIA SPRINT _2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=1943015509&single=true&output=csv",
-            "STELVIO_QV": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=1334614275&single=true&output=csv"
+            "GIULIA SPRINT _2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=1525555317&single=true&output=csv",
+            "STELVIO_QV": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=185633172&single=true&output=csv"
         };
 
         let allParsedPackages = {}; 
@@ -176,7 +176,6 @@
         let rawLaborSum = 0;
         let rawPartsSum = 0;
 
-        // 初始化下拉選單
         function initCarModelSelect() {
             const selectEl = document.getElementById('car-model-select');
             selectEl.innerHTML = Object.keys(CAR_MODELS_SHEETS).map(model => `
@@ -184,17 +183,16 @@
             `).join('');
         }
 
-        // 切換車型
         function switchCarModel(modelName) {
             selectedModel = modelName;
             document.getElementById('package-tabs').innerHTML = '<span class="text-sm text-gray-500">正在讀取雲端資料...</span>';
             fetchSheetData();
         }
 
-        // 從對應網址抓取 CSV
         async function fetchSheetData() {
             const targetUrl = CAR_MODELS_SHEETS[selectedModel];
             try {
+                // 加上時間戳防快取干擾，確保資料同步最即時
                 const response = await fetch(targetUrl + "&cachebust=" + new Date().getTime());
                 const csvText = await response.text();
                 parseExcelCSV(csvText);
@@ -204,7 +202,6 @@
             }
         }
 
-        // 解析單一分頁內的所有套餐
         function parseExcelCSV(csvText) {
             const lines = csvText.split(/\r?\n/);
             const packages = {};
@@ -235,7 +232,7 @@
                     const discount = cols[5] || "";
                     const subtotal = cols[6] || "";
                     const location = cols[7] || ""; 
-                    const description = cols[9] || ""; // J 欄說明
+                    const description = cols[9] || ""; // J 欄
 
                     const cleanSubtotal = parseFloat(subtotal.replace(/[^0-9.-]+/g, "")) || 0;
 
@@ -252,7 +249,7 @@
                 renderTabs(keys);
                 switchPackage(keys[0]);
             } else {
-                document.getElementById('current-package-title').innerText = "⚠️ 找不到任何套餐項目，請確認此分頁資料格式";
+                document.getElementById('current-package-title').innerText = "⚠️ 找不到任何套餐項目，請確認此分頁資料格式是否正確";
                 clearDisplay();
             }
         }
