@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alfa Romeo 專業多車型保養看板 (動態分頁版)</title>
+    <title>Alfa Romeo 專業多車型保養看板 (動態分頁修復版)</title>
+    <!-- 使用 Tailwind CSS 打造高質感暗色風格 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
@@ -16,10 +17,13 @@
 </head>
 <body class="h-screen overflow-hidden flex flex-col p-6 relative">
 
+    <!-- 頂部標頭列 -->
     <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-800 pb-4 mb-4 gap-4">
         <div class="flex items-center space-x-4 shrink-0">
+            <!-- 仿 Alfa 熱血紅圓標 -->
             <div class="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center font-black text-white text-xs tracking-wider shadow-md shadow-red-900/30">ALFA</div>
             <div>
+                <!-- 車型切換下拉選單 -->
                 <div class="flex items-center space-x-2">
                     <label for="car-model-select" class="text-xs text-gray-400 font-bold">目前展示車型：</label>
                     <select id="car-model-select" onchange="switchCarModel(this.value)" class="bg-[#161b22] text-white border border-gray-700 rounded px-2 py-1 text-sm font-bold focus:outline-none focus:border-red-600 cursor-pointer">
@@ -30,6 +34,7 @@
             </div>
         </div>
         
+        <!-- 套餐切換鈕區域 -->
         <div id="package-tabs" class="flex flex-wrap gap-2 max-w-2xl justify-start lg:justify-center">
             <span class="text-sm text-gray-500">正在辨識保養套餐項目...</span>
         </div>
@@ -39,8 +44,10 @@
         </button>
     </header>
 
+    <!-- 主顯示區 -->
     <main class="flex-1 flex space-x-6 overflow-hidden">
         
+        <!-- 左側：保養套餐表格 -->
         <section class="w-7/12 flex flex-col bg-[#161b22] rounded-xl border border-gray-800 p-5 overflow-hidden shadow-2xl">
             <div class="flex justify-between items-center mb-3">
                 <h2 id="current-package-title" class="text-lg font-bold text-red-500 flex items-center">
@@ -49,6 +56,7 @@
                 <span class="text-[10px] bg-green-950 text-green-400 border border-green-900 px-2.5 py-0.5 rounded-full font-semibold">連線正常</span>
             </div>
 
+            <!-- 表格主體 -->
             <div class="flex-1 overflow-y-auto custom-scrollbar">
                 <table class="w-full text-left text-sm">
                     <thead>
@@ -58,16 +66,18 @@
                             <th class="p-3">項目名稱</th>
                             <th class="p-3 text-right">單價</th>
                             <th class="p-3 text-right">數量</th>
-                            <th class="p-3 text-right">折讓</th>
+                            <th class="p-3 text-right">打折</th>
                             <th class="p-3 text-right">加總</th>
                             <th class="p-3 text-center rounded-r-md">層架</th>
                         </tr>
                     </thead>
                     <tbody id="table-rows">
-                        </tbody>
+                        <!-- 資料由 JavaScript 動態生成 -->
+                    </tbody>
                 </table>
             </div>
 
+            <!-- 工資、零件雙小計明細區 -->
             <div class="border-t border-gray-800 pt-4 mt-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs text-gray-400">
                 <div class="flex flex-wrap space-x-6">
                     <div>
@@ -84,6 +94,7 @@
                     </div>
                 </div>
 
+                <!-- 零件折扣趴數輸入框 -->
                 <div class="flex items-center space-x-2 bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-1.5 shrink-0">
                     <span class="text-[11px] text-gray-400 font-bold">🛠️ 零件折扣比率：</span>
                     <input 
@@ -100,6 +111,7 @@
                 </div>
             </div>
 
+            <!-- 底部總計金額 -->
             <div class="border-t border-gray-800 pt-3 mt-2 flex justify-between items-center">
                 <div class="flex flex-col">
                     <span class="text-gray-400 text-sm font-medium">套餐應付總金額 (Grand Total)</span>
@@ -109,15 +121,18 @@
             </div>
         </section>
 
+        <!-- 右側：零件圖片展示牆 -->
         <section class="w-5/12 flex flex-col space-y-4 overflow-hidden">
             <div class="flex-1 bg-[#161b22] rounded-xl border border-gray-800 p-5 flex flex-col overflow-hidden shadow-2xl">
                 <h3 class="text-sm font-semibold text-gray-400 mb-4 tracking-wider flex items-center">
                     <span class="mr-2">🔧</span>套餐内含零件圖解 (點擊表格高亮，點擊圖片彈出大圖)
                 </h3>
                 <div id="image-grid" class="flex-1 grid grid-cols-2 gap-4 overflow-y-auto custom-scrollbar p-1 align-content-start">
-                    </div>
+                    <!-- 圖片卡片由 JavaScript 動態生成 -->
+                </div>
             </div>
 
+            <!-- 備註說明區 -->
             <div class="h-32 bg-[#161b22] rounded-xl border border-gray-800 p-4 flex flex-col justify-center">
                 <h4 class="text-xs font-bold text-red-400 mb-1">💡 現場維護提示</h4>
                 <p class="text-xs text-gray-400 leading-relaxed">
@@ -128,6 +143,7 @@
 
     </main>
 
+    <!-- 高質感點擊燈箱彈出視窗 -->
     <div id="lightbox" onclick="closeLightbox()" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col justify-center items-center p-4 cursor-zoom-out transition-opacity duration-300 opacity-0">
         <button class="absolute top-6 right-6 text-gray-400 hover:text-white text-4xl font-light focus:outline-none">&times;</button>
         <div class="max-w-4xl max-h-[80vh] flex items-center justify-center bg-[#161b22] p-2 rounded-lg border border-gray-800 shadow-2xl" onclick="event.stopPropagation()">
@@ -145,21 +161,19 @@
 
     <script>
         // ==========================================================
-        // 🔗 核心修改：請將下方網址換成你發布「整個文件」的 CSV 網址！
+        // 🔗 請確保下方網址是你發布「整個文件」的 CSV 網址
         // ==========================================================
         const GOOGLE_SHEET_GLOBAL_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?output=csv";
 
-        // 全域資料儲存庫
         let DATABASE = {}; 
         let selectedModel = "";
         let currentPackageKey = "";
         let rawLaborSum = 0;
         let rawPartsSum = 0;
 
-        // 開網頁第一步：直接向雲端索取整份文件大數據
         async function fetchSheetData() {
             try {
-                const response = await fetch(GOOGLE_SHEET_GLOBAL_URL);
+                const response = await fetch(GOOGLE_SHEET_GLOBAL_URL + "&cachebust=" + new Date().getTime());
                 const csvText = await response.text();
                 parseGlobalCSV(csvText);
             } catch (error) {
@@ -168,38 +182,35 @@
             }
         }
 
-        // 智慧型多車型多套餐立體結構拆解引擎
+        // 精準多車型、多套餐動態辨識引擎
         function parseGlobalCSV(csvText) {
             const lines = csvText.split(/\r?\n/);
             const tempDatabase = {};
             
-            let currentModelName = "";   // 目前掃描到的車型分頁
-            let currentPackageName = ""; // 目前掃描到的保養套餐
+            // 預設你的車型列表，當資料流切換到該區塊時自動分類
+            const KNOWN_MODELS = ["STELVIO_2.0", "GIULIA SPRINT _2.0", "STELVIO_QV"];
+            let currentModelName = KNOWN_MODELS[0]; 
+            let currentPackageName = "";
 
             lines.forEach((line) => {
-                // 精準切分 CSV 欄位（排除引號內逗號干擾）
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
                 if (cols.length < 2) return;
 
-                // 🌟 【智慧偵測車型分頁起點】當遇到 Google CSV 自動注入的分頁標記或自訂車型大欄位時
-                // 註：Google 整個文件發布時，通常會在換分頁時塞入分頁名稱，或我們可以辨識特定的關鍵名稱
-                // 這裡設計一個極其強大的防呆：若第一欄包含車型或帶有特定格式，就建立新車型
-                if (cols[0] && (cols[0].includes("Sprint") || cols[0].includes("Giulia") || cols[0].includes("Stelvio") || cols[0] === "車型分頁")) {
-                    currentModelName = cols[0].replace("車型分頁：", "");
-                    if (!tempDatabase[currentModelName]) {
-                        tempDatabase[currentModelName] = {};
+                // 🌟 改進點 1：自動比對是不是換到了新車型分頁的開頭
+                const contentStr = cols.join(" ");
+                for (const model of KNOWN_MODELS) {
+                    if (contentStr.includes(model) && !contentStr.includes("套餐")) {
+                        currentModelName = model;
+                        currentPackageName = "";
+                        break;
                     }
-                    currentPackageName = ""; // 重置套餐指引
-                    return;
                 }
 
-                // 如果還沒有抓到車型，先預設給予第一個預設值（相容舊格式）
-                if (!currentModelName) {
-                    currentModelName = "Stelvio Sprint 2.0";
-                    if (!tempDatabase[currentModelName]) tempDatabase[currentModelName] = {};
+                if (!tempDatabase[currentModelName]) {
+                    tempDatabase[currentModelName] = {};
                 }
 
-                // 📦 【偵測套餐區塊】
+                // 📦 偵測套餐區塊
                 const foundPackageCell = cols.find(cell => cell && cell.includes("套餐"));
                 if (foundPackageCell) {
                     currentPackageName = foundPackageCell;
@@ -210,13 +221,12 @@
                     return;
                 }
 
-                // 🔧 【提取零件與工資明細】
+                // 🔧 提取明細
                 const attr = cols[0] || "";
                 const partId = cols[1] || "";
                 const name = cols[2] || "";
 
                 if (currentPackageName && partId && partId !== "料號" && attr !== "屬性" && attr !== "總表") {
-                    // 排除「總表」分頁的混淆數據
                     const price = cols[3] || "";
                     const qty = cols[4] || "";
                     const discount = cols[5] || "";
@@ -232,29 +242,31 @@
                 }
             });
 
-            // 過濾並清理空的或錯誤的分頁
+            // 清理空分頁並載入資料庫
             DATABASE = {};
             Object.keys(tempDatabase).forEach(model => {
-                if (Object.keys(tempDatabase[model]).length > 0 && model !== "總表") {
+                if (Object.keys(tempDatabase[model]).length > 0) {
                     DATABASE[model] = tempDatabase[model];
                 }
             });
 
-            // 渲染前端下拉選單
             renderCarModelSelect();
         }
 
-        // 動態渲染網頁左上角的「車型下拉選單」
         function renderCarModelSelect() {
             const selectEl = document.getElementById('car-model-select');
             const models = Object.keys(DATABASE);
 
             if (models.length === 0) {
-                selectEl.innerHTML = `<option value="">⚠️ 雲端未發現相容車型分頁</option>`;
+                // 防呆：如果完全沒抓到，直接強塞你試算表的真實分頁名稱
+                selectEl.innerHTML = `
+                    <option value="STELVIO_2.0">STELVIO_2.0</option>
+                    <option value="GIULIA SPRINT _2.0">GIULIA SPRINT _2.0</option>
+                    <option value="STELVIO_QV">STELVIO_QV</option>
+                `;
                 return;
             }
 
-            // 自動記錄上一次選的，或是預設選第一個
             if (!selectedModel || !DATABASE[selectedModel]) {
                 selectedModel = models[0];
             }
@@ -263,7 +275,6 @@
                 <option value="${model}" ${model === selectedModel ? 'selected' : ''}>${model}</option>
             `).join('');
 
-            // 即時觸發該車型的套餐排版
             loadPackagesForModel(selectedModel);
         }
 
@@ -273,7 +284,6 @@
             loadPackagesForModel(selectedModel);
         }
 
-        // 載入當前選中車型底下的所有「套餐切換鈕」
         function loadPackagesForModel(modelName) {
             const packages = DATABASE[modelName] || {};
             const keys = Object.keys(packages);
@@ -451,7 +461,6 @@
             if (event.key === 'Escape') closeLightbox();
         });
 
-        // 啟動全自動加載
         fetchSheetData();
     </script>
 </body>
