@@ -11,24 +11,38 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #161b22; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+        .active-doc-card { border-color: #da1a29 !important; background-color: #1f242c !important; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col p-4 pb-8">
 
-    <!-- 頂部標題與車型選擇器 -->
-    <header class="mb-6">
-        <div class="flex items-center space-x-3 mb-3">
-            <div class="w-10 h-10 bg-red-700 rounded-full flex items-center justify-center font-black text-white text-[10px] tracking-wider shadow-lg shadow-red-900/40 shrink-0">
-                ALFA
+    <!-- 頂部標題與模式切換器 -->
+    <header class="mb-4">
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-red-700 rounded-full flex items-center justify-center font-black text-white text-[10px] tracking-wider shadow-lg shadow-red-900/40 shrink-0">
+                    ALFA
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-white leading-tight">Alfa Romeo 行動看板</h1>
+                    <p class="text-[10px] text-gray-400">行動維護手冊 · 即時同步雲端</p>
+                </div>
             </div>
-            <div>
-                <h1 class="text-base font-bold text-white leading-tight">Alfa Romeo 快速查閱看板</h1>
-                <p class="text-[10px] text-gray-400">行動維護手冊 · 即時同步雲端</p>
-            </div>
+            <span id="status-badge" class="text-[10px] bg-amber-950/80 text-amber-400 border border-amber-900 px-2 py-0.5 rounded-full">載入資料中...</span>
         </div>
 
-        <!-- 車型切換選單 -->
-        <div class="bg-[#161b22] border border-gray-800 rounded-xl p-3 shadow-md">
+        <!-- 功能切換標籤 (保養套餐 vs 技術文獻) -->
+        <div class="grid grid-cols-2 gap-2 bg-[#161b22] p-1 rounded-xl border border-gray-800 mb-3">
+            <button id="tab-btn-package" onclick="switchMobileTab('package')" class="py-2 rounded-lg text-xs font-bold transition-all bg-red-600 text-white shadow-md text-center">
+                🛠️ 保養套餐
+            </button>
+            <button id="tab-btn-docs" onclick="switchMobileTab('docs')" class="py-2 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white text-center">
+                📚 技術文獻庫
+            </button>
+        </div>
+
+        <!-- 車型切換選單 (僅在保養套餐分頁顯示) -->
+        <div id="car-select-container" class="bg-[#161b22] border border-gray-800 rounded-xl p-3 shadow-md">
             <label for="car-model-select" class="block text-[11px] text-gray-400 font-bold mb-1.5">請選擇車型：</label>
             <select id="car-model-select" onchange="switchCarModel(this.value)" class="w-full bg-[#0d1117] text-white border border-gray-700 rounded-lg px-3 py-2.5 text-sm font-bold focus:outline-none focus:border-red-600 cursor-pointer">
                 <!-- 由 JavaScript 自動動態帶入 -->
@@ -36,31 +50,44 @@
         </div>
     </header>
 
-    <!-- 主內容區：保養週期按鈕清單 -->
-    <main class="flex-1">
+    <!-- 主內容區 1：保養週期按鈕清單 -->
+    <main id="mobile-view-package" class="flex-1">
         <div class="flex justify-between items-center mb-3 px-1">
             <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider">保養週期 (點擊查看明細)</h2>
-            <span id="status-badge" class="text-[10px] bg-amber-950/80 text-amber-400 border border-amber-900 px-2 py-0.5 rounded-full">載入資料中...</span>
         </div>
 
         <!-- 週期卡片列表 -->
         <div id="cycle-grid" class="grid grid-cols-1 gap-3">
-            <!-- 載入中的骨架屏或提示 -->
             <div class="bg-[#161b22] border border-gray-800 rounded-xl p-6 text-center text-xs text-gray-500">
                 🔄 正在讀取雲端保養數據...
             </div>
         </div>
     </main>
 
-    <!-- 全螢幕燈箱：保養套餐詳細內容 -->
-    <div id="package-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex flex-col justify-end transition-all duration-300">
-        <!-- 點擊背景關閉 -->
-        <div class="flex-1" onclick="closeModal()"></div>
-
-        <!-- 燈箱內容主體 (由下而上彈出卡片) -->
-        <div class="bg-[#161b22] border-t border-gray-800 rounded-t-2xl max-h-[85vh] flex flex-col w-full shadow-2xl overflow-hidden animate-slide-up">
+    <!-- 主內容區 2：技術文獻資料庫 -->
+    <main id="mobile-view-docs" class="flex-1 hidden">
+        <div class="space-y-3 mb-4">
+            <!-- 搜尋框 -->
+            <input type="text" id="doc-search-input" oninput="filterDocs()" placeholder="🔍 搜尋文獻標題、分類或編號..." class="w-full bg-[#161b22] border border-gray-700 rounded-xl px-3 py-2.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-red-600">
             
-            <!-- 燈箱頂部列 -->
+            <!-- 分類標籤快速切換 -->
+            <div id="doc-tag-buttons" class="flex flex-wrap gap-1.5 overflow-x-auto pb-1">
+                <!-- 動態生成分類按鈕 -->
+            </div>
+        </div>
+
+        <!-- 技術文獻卡片列表 -->
+        <div id="doc-list" class="space-y-2.5">
+            <div class="bg-[#161b22] border border-gray-800 rounded-xl p-6 text-center text-xs text-gray-500">
+                🔄 正在讀取技術文獻數據...
+            </div>
+        </div>
+    </main>
+
+    <!-- 全螢幕燈箱 1：保養套餐詳細內容 -->
+    <div id="package-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex flex-col justify-end transition-all duration-300">
+        <div class="flex-1" onclick="closeModal()"></div>
+        <div class="bg-[#161b22] border-t border-gray-800 rounded-t-2xl max-h-[85vh] flex flex-col w-full shadow-2xl overflow-hidden animate-slide-up">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#161b22] sticky top-0 z-10">
                 <div>
                     <span id="modal-model-badge" class="text-[10px] bg-red-950 text-red-400 border border-red-900 px-2 py-0.5 rounded font-mono block w-max mb-1">STELVIO</span>
@@ -71,10 +98,7 @@
                 </button>
             </div>
 
-            <!-- 燈箱可滾動內容區 -->
             <div class="p-4 overflow-y-auto custom-scrollbar flex-1 space-y-4">
-                
-                <!-- 總額與計價明細 -->
                 <div class="bg-[#0d1117] border border-gray-800 rounded-xl p-3.5 flex justify-between items-center">
                     <div>
                         <span class="text-[10px] text-gray-400 block">套餐預估總金額</span>
@@ -86,7 +110,6 @@
                     </div>
                 </div>
 
-                <!-- 零件與工資清單表格 -->
                 <div>
                     <h4 class="text-xs font-bold text-gray-400 mb-2 flex items-center">
                         <span class="w-1.5 h-3 bg-red-600 inline-block mr-1.5 rounded-sm"></span>保養項目明細
@@ -100,26 +123,19 @@
                                     <th class="p-2.5 text-right">小計</th>
                                 </tr>
                             </thead>
-                            <tbody id="modal-table-body">
-                                <!-- 動態帶入列表 -->
-                            </tbody>
+                            <tbody id="modal-table-body"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- 零件圖照小卡區 -->
                 <div id="modal-images-section">
                     <h4 class="text-xs font-bold text-gray-400 mb-2 flex items-center">
                         <span class="w-1.5 h-3 bg-red-600 inline-block mr-1.5 rounded-sm"></span>零件圖解與層架
                     </h4>
-                    <div id="modal-image-grid" class="grid grid-cols-2 gap-2.5">
-                        <!-- 動態帶入卡片 -->
-                    </div>
+                    <div id="modal-image-grid" class="grid grid-cols-2 gap-2.5"></div>
                 </div>
-
             </div>
 
-            <!-- 燈箱底部關閉按鈕 -->
             <div class="p-3 border-t border-gray-800 bg-[#161b22]">
                 <button onclick="closeModal()" class="w-full bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-bold py-3 rounded-xl transition-colors">
                     關閉選單
@@ -128,9 +144,25 @@
         </div>
     </div>
 
+    <!-- 全螢幕燈箱 2：PDF 技術文獻滿版預覽燈箱 -->
+    <div id="doc-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col">
+        <div class="p-3 border-b border-gray-800 bg-[#161b22] flex justify-between items-center shrink-0">
+            <div class="truncate pr-2">
+                <span id="pdf-modal-category" class="text-[9px] bg-red-950 text-red-400 border border-red-900 px-1.5 py-0.5 rounded font-bold mr-1">TSB</span>
+                <span id="pdf-modal-title" class="text-xs font-bold text-white">手冊標題</span>
+            </div>
+            <button onclick="closeDocModal()" class="w-8 h-8 rounded-full bg-[#0d1117] border border-gray-700 flex items-center justify-center text-gray-400 hover:text-white text-xl font-light shrink-0">
+                &times;
+            </button>
+        </div>
+        <div class="flex-1 w-full bg-[#0d1117] relative">
+            <iframe id="pdf-modal-iframe" class="w-full h-full border-0" src=""></iframe>
+        </div>
+    </div>
+
     <script>
         // ==========================================================
-        // 🎯 雲端資料庫連結
+        // 🎯 雲端資料庫連結對照表
         // ==========================================================
         const CAR_MODELS_SHEETS = {
             "STELVIO INTENSA_2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv",
@@ -139,10 +171,38 @@
             "JUNIOR IBRIDA Q2": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=777601990&single=true&output=csv"
         };
 
-        let allParsedPackages = {};
-        let selectedModel = Object.keys(CAR_MODELS_SHEETS)[0];
+        // 技術文獻 CSV 連結
+        const TECH_DOCS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=918059507&single=true&output=csv";
 
-        // 初始化車型選單
+        let allParsedPackages = {};
+        let allParsedDocs = [];
+        let selectedModel = Object.keys(CAR_MODELS_SHEETS)[0];
+        let activeTag = "全部";
+
+        // 行動版雙頁籤切換
+        function switchMobileTab(tab) {
+            const pkgMain = document.getElementById('mobile-view-package');
+            const docsMain = document.getElementById('mobile-view-docs');
+            const carSelect = document.getElementById('car-select-container');
+            const btnPkg = document.getElementById('tab-btn-package');
+            const btnDocs = document.getElementById('tab-btn-docs');
+
+            if (tab === 'package') {
+                pkgMain.classList.remove('hidden');
+                docsMain.classList.add('hidden');
+                carSelect.classList.remove('hidden');
+                btnPkg.className = "py-2 rounded-lg text-xs font-bold transition-all bg-red-600 text-white shadow-md text-center";
+                btnDocs.className = "py-2 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white text-center";
+            } else {
+                pkgMain.classList.add('hidden');
+                docsMain.classList.remove('hidden');
+                carSelect.classList.add('hidden');
+                btnDocs.className = "py-2 rounded-lg text-xs font-bold transition-all bg-red-600 text-white shadow-md text-center";
+                btnPkg.className = "py-2 rounded-lg text-xs font-bold transition-all text-gray-400 hover:text-white text-center";
+                if (allParsedDocs.length === 0) fetchTechDocsData();
+            }
+        }
+
         function initCarModelSelect() {
             const selectEl = document.getElementById('car-model-select');
             selectEl.innerHTML = Object.keys(CAR_MODELS_SHEETS).map(model => `
@@ -150,7 +210,6 @@
             `).join('');
         }
 
-        // 切換車型
         function switchCarModel(modelName) {
             selectedModel = modelName;
             document.getElementById('cycle-grid').innerHTML = `
@@ -161,18 +220,15 @@
             fetchSheetData();
         }
 
-        // 讀取雲端 CSV 數據
         async function fetchSheetData() {
             const targetUrl = CAR_MODELS_SHEETS[selectedModel];
             const badge = document.getElementById('status-badge');
-            
             try {
                 badge.innerText = "連線中...";
                 badge.className = "text-[10px] bg-amber-950/80 text-amber-400 border border-amber-900 px-2 py-0.5 rounded-full";
 
                 const response = await fetch(targetUrl + "&cachebust=" + new Date().getTime());
                 const csvText = await response.text();
-                
                 parseExcelCSV(csvText);
 
                 badge.innerText = "同步完成";
@@ -184,7 +240,16 @@
             }
         }
 
-        // 解析 CSV 結構
+        async function fetchTechDocsData() {
+            try {
+                const response = await fetch(TECH_DOCS_URL + "&cachebust=" + new Date().getTime());
+                const csvText = await response.text();
+                parseDocsCSV(csvText);
+            } catch (error) {
+                console.error("讀取技術文獻失敗:", error);
+            }
+        }
+
         function parseExcelCSV(csvText) {
             const lines = csvText.split(/\r?\n/);
             const packages = {};
@@ -195,13 +260,9 @@
                 if (cols.length < 3) return;
 
                 const foundPackageCell = cols.find(cell => cell && cell.includes("套餐"));
-                
                 if (foundPackageCell) {
                     currentPackageName = foundPackageCell;
-                    packages[currentPackageName] = {
-                        name: currentPackageName,
-                        items: []
-                    };
+                    packages[currentPackageName] = { name: currentPackageName, items: [] };
                     return;
                 }
 
@@ -218,7 +279,6 @@
                     const description = cols[9] || "";
 
                     const cleanSubtotal = parseFloat(subtotal.replace(/[^0-9.-]+/g, "")) || 0;
-
                     packages[currentPackageName].items.push({
                         attr, partId, name, price, qty, discount, subtotal, cleanSubtotal, location, description
                     });
@@ -229,17 +289,97 @@
             renderCycleButtons();
         }
 
-        // 渲染手機版保養週期按鈕
+        function parseDocsCSV(csvText) {
+            const lines = csvText.split(/\r?\n/);
+            const docs = [];
+            lines.forEach((line, index) => {
+                if (index === 0) return;
+                const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
+                if (cols.length >= 4 && cols[2] && cols[3]) {
+                    docs.push({
+                        category: cols[0] || "未分類",
+                        code: cols[1] || "",
+                        title: cols[2],
+                        url: cols[3],
+                        keyword: cols[4] || ""
+                    });
+                }
+            });
+
+            allParsedDocs = docs;
+            renderDocTags();
+            filterDocs();
+        }
+
+        function renderDocTags() {
+            const categories = ["全部", ...new Set(allParsedDocs.map(d => d.category))];
+            const tagsContainer = document.getElementById('doc-tag-buttons');
+            tagsContainer.innerHTML = categories.map(cat => {
+                const count = cat === "全部" ? allParsedDocs.length : allParsedDocs.filter(d => d.category === cat).length;
+                const activeClass = cat === activeTag 
+                    ? "bg-red-600 text-white border-red-500" 
+                    : "bg-[#161b22] text-gray-400 border-gray-800 hover:text-white";
+                return `<button onclick="setDocTag('${cat}')" class="px-2.5 py-1 rounded-lg text-[10px] font-bold border ${activeClass} whitespace-nowrap transition-all">${cat} (${count})</button>`;
+            }).join('');
+        }
+
+        function setDocTag(tag) {
+            activeTag = tag;
+            renderDocTags();
+            filterDocs();
+        }
+
+        function filterDocs() {
+            const query = document.getElementById('doc-search-input').value.toLowerCase();
+            const filtered = allParsedDocs.filter(doc => {
+                const matchesTag = activeTag === "全部" || doc.category === activeTag;
+                const matchesQuery = doc.title.toLowerCase().includes(query) || 
+                                     doc.code.toLowerCase().includes(query) || 
+                                     doc.category.toLowerCase().includes(query);
+                return matchesTag && matchesQuery;
+            });
+            renderDocList(filtered);
+        }
+
+        function renderDocList(docs) {
+            const container = document.getElementById('doc-list');
+            if (docs.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 text-xs py-8">未找到符合條件的技術文獻</div>';
+                return;
+            }
+
+            container.innerHTML = docs.map((doc) => `
+                <div onclick="openDocModal('${doc.url}', '${doc.category}', '${doc.title}')" class="bg-[#161b22] border border-gray-800 hover:border-red-600/60 active:bg-[#1f242c] rounded-xl p-3.5 flex justify-between items-center transition-all cursor-pointer shadow-md">
+                    <div class="space-y-1 pr-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-red-950 text-red-400 border border-red-900 px-1.5 py-0.5 rounded text-[9px] font-bold">${doc.category}</span>
+                            ${doc.code ? `<span class="text-[10px] font-mono text-gray-500">${doc.code}</span>` : ''}
+                        </div>
+                        <h4 class="text-xs font-bold text-white leading-snug">${doc.title}</h4>
+                    </div>
+                    <span class="text-red-500 text-xs font-mono shrink-0">開啟 ▶</span>
+                </div>
+            `).join('');
+        }
+
+        function openDocModal(url, category, title) {
+            document.getElementById('pdf-modal-category').innerText = category;
+            document.getElementById('pdf-modal-title').innerText = title;
+            document.getElementById('pdf-modal-iframe').src = url;
+            document.getElementById('doc-modal').classList.remove('hidden');
+        }
+
+        function closeDocModal() {
+            document.getElementById('doc-modal').classList.add('hidden');
+            document.getElementById('pdf-modal-iframe').src = '';
+        }
+
         function renderCycleButtons() {
             const gridContainer = document.getElementById('cycle-grid');
             const keys = Object.keys(allParsedPackages);
 
             if (keys.length === 0) {
-                gridContainer.innerHTML = `
-                    <div class="bg-[#161b22] border border-gray-800 rounded-xl p-6 text-center text-xs text-amber-500">
-                        ⚠️ 找不到保養週期資料
-                    </div>
-                `;
+                gridContainer.innerHTML = `<div class="bg-[#161b22] border border-gray-800 rounded-xl p-6 text-center text-xs text-amber-500">⚠️ 找不到保養週期資料</div>`;
                 return;
             }
 
@@ -266,7 +406,6 @@
             }).join('');
         }
 
-        // 打開燈箱並塞入數據
         function openModal(packageKey) {
             const pkg = allParsedPackages[packageKey];
             if (!pkg) return;
@@ -280,16 +419,11 @@
             let imageHTML = '';
 
             pkg.items.forEach(item => {
-                if (item.attr === "工資") {
-                    laborSum += item.cleanSubtotal;
-                } else {
-                    partsSum += item.cleanSubtotal;
-                }
+                if (item.attr === "工資") laborSum += item.cleanSubtotal;
+                else partsSum += item.cleanSubtotal;
 
                 const isLabor = item.attr === "工資";
-                const badgeStyle = isLabor 
-                    ? "bg-slate-800 text-slate-300" 
-                    : "bg-red-950 text-red-400";
+                const badgeStyle = isLabor ? "bg-slate-800 text-slate-300" : "bg-red-950 text-red-400";
 
                 tableHTML += `
                     <tr class="border-b border-gray-800/60">
@@ -305,7 +439,6 @@
                     </tr>
                 `;
 
-                // 零件顯示圖片卡片
                 if (!isLabor && item.partId) {
                     const imgUrl = `${item.partId}.jpg`;
                     const defaultImg = "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?auto=format&fit=crop&w=300&q=80";
@@ -332,12 +465,9 @@
             document.getElementById('modal-table-body').innerHTML = tableHTML;
             document.getElementById('modal-image-grid').innerHTML = imageHTML || `<p class="text-xs text-gray-500 col-span-2 text-center py-2">無零件圖解資料</p>`;
 
-            // 顯示燈箱
-            const modal = document.getElementById('package-modal');
-            modal.classList.remove('hidden');
+            document.getElementById('package-modal').classList.remove('hidden');
         }
 
-        // 關閉燈箱
         function closeModal() {
             document.getElementById('package-modal').classList.add('hidden');
         }
