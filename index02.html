@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alfa Romeo 專業多車型保養看板</title>
+    <title>Alfa Romeo 專業多車型保養看板與技術文獻庫</title>
     <!-- 使用 Tailwind CSS 打造高質感暗色風格 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -13,12 +13,13 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
         .active-row { background-color: #1f242c !important; border-left: 4px solid #da1a29 !important; }
         .active-card { border-color: #da1a29 !important; background-color: #21262d !important; transform: scale(1.02); }
+        .active-doc-card { border-color: #da1a29 !important; background-color: #1f242c !important; }
     </style>
 </head>
 <body class="h-screen overflow-hidden flex flex-col p-6 relative">
 
     <!-- 頂部標頭列 -->
-    <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-800 pb-4 mb-4 gap-4">
+    <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-800 pb-4 mb-4 gap-4 shrink-0">
         <div class="flex items-center space-x-4 shrink-0">
             <!-- 仿 Alfa 熱血紅圓標 -->
             <div class="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center font-black text-white text-xs tracking-wider shadow-md shadow-red-900/30">ALFA</div>
@@ -32,6 +33,16 @@
                 </div>
                 <p class="text-[10px] text-gray-500 mt-1">數據來源：Google 雲端同步試算表（獨立分頁精準連線）</p>
             </div>
+            
+            <!-- 主功能切換按鈕區域 -->
+            <div class="flex bg-[#161b22] border border-gray-700 rounded-lg p-1 ml-2">
+                <button id="nav-pkg-btn" onclick="switchMainView('package')" class="px-3 py-1.5 rounded-md text-xs font-bold text-white bg-red-600 transition-all flex items-center space-x-1 shadow-md">
+                    <span>🛠️</span> <span>保養套餐看板</span>
+                </button>
+                <button id="nav-doc-btn" onclick="switchMainView('tech_docs')" class="px-3 py-1.5 rounded-md text-xs font-bold text-gray-400 hover:text-white transition-all flex items-center space-x-1">
+                    <span>📚</span> <span>技術文獻資料庫</span>
+                </button>
+            </div>
         </div>
         
         <!-- 套餐切換鈕區域 -->
@@ -39,13 +50,13 @@
             <span class="text-sm text-gray-500">正在辨識保養套餐項目...</span>
         </div>
 
-        <button onclick="fetchSheetData()" class="bg-[#161b22] hover:bg-gray-800 text-gray-300 hover:text-white text-xs px-4 py-2 rounded-lg transition-all border border-gray-700 flex items-center space-x-1.5 shrink-0">
+        <button onclick="refreshData()" class="bg-[#161b22] hover:bg-gray-800 text-gray-300 hover:text-white text-xs px-4 py-2 rounded-lg transition-all border border-gray-700 flex items-center space-x-1.5 shrink-0">
             <span>🔄</span> <span>手動重新整理</span>
         </button>
     </header>
 
-    <!-- 主顯示區 -->
-    <main class="flex-1 flex space-x-6 overflow-hidden">
+    <!-- 視圖 1：保養套餐看板 -->
+    <main id="view-package" class="flex-1 flex space-x-6 overflow-hidden">
         
         <!-- 左側：保養套餐表格 -->
         <section class="w-7/12 flex flex-col bg-[#161b22] rounded-xl border border-gray-800 p-5 overflow-hidden shadow-2xl">
@@ -143,6 +154,44 @@
 
     </main>
 
+    <!-- 視圖 2：技術文獻資料庫 -->
+    <main id="view-docs" class="flex-1 flex space-x-6 overflow-hidden hidden">
+        <!-- 左側：文件列表與搜尋 -->
+        <section class="w-5/12 flex flex-col bg-[#161b22] rounded-xl border border-gray-800 p-5 overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-red-500 flex items-center">
+                    <span class="w-2 h-5 bg-red-600 inline-block mr-2 rounded-sm"></span>Alfa 原廠 TSB 與技術手冊
+                </h2>
+                <span id="doc-count-badge" class="text-xs bg-gray-800 text-gray-300 border border-gray-700 px-2.5 py-0.5 rounded-full font-mono">0 份文件</span>
+            </div>
+
+            <!-- 搜尋與分類關鍵字 -->
+            <div class="space-y-3 mb-4">
+                <div class="relative">
+                    <input type="text" id="doc-search-input" oninput="filterDocs()" placeholder="🔍 搜尋手冊標題、分類或料號..." class="w-full bg-[#0d1117] border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-red-600">
+                </div>
+                <div id="doc-tag-buttons" class="flex flex-wrap gap-1.5">
+                    <!-- 動態生成分類標籤按鈕 -->
+                </div>
+            </div>
+
+            <!-- 文件清單 -->
+            <div id="doc-list" class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
+                <!-- 動態注入文件卡片 -->
+            </div>
+        </section>
+
+        <!-- 右側：PDF 預覽區 -->
+        <section class="w-7/12 flex flex-col bg-[#161b22] rounded-xl border border-gray-800 p-2 overflow-hidden shadow-2xl relative">
+            <div id="doc-preview-placeholder" class="flex-1 flex flex-col items-center justify-center text-gray-500">
+                <span class="text-4xl mb-3 opacity-60">📄</span>
+                <p class="text-sm font-medium">請選擇左側文件進行預覽</p>
+                <p class="text-xs text-gray-600 mt-1">點擊左側檔案標題即可在此預覽原廠手冊 PDF</p>
+            </div>
+            <iframe id="doc-pdf-iframe" class="w-full h-full rounded-lg hidden border-0" src=""></iframe>
+        </section>
+    </main>
+
     <!-- 高質感點擊燈箱彈出視窗 -->
     <div id="lightbox" onclick="closeLightbox()" class="hidden fixed inset-0 bg-black/90 z-50 flex flex-col justify-center items-center p-4 cursor-zoom-out transition-opacity duration-300 opacity-0">
         <button class="absolute top-6 right-6 text-gray-400 hover:text-white text-4xl font-light focus:outline-none">&times;</button>
@@ -162,7 +211,7 @@
     <script>
         // ==========================================================
         // 🎯【完美網址資料庫對照表】
-        // 已將個別分頁的雲端網址精準對齊，並加入 JUNIOR IBRIDA Q2 分頁
+        // 已將個別分頁的雲端網址精準對齊，並整合 TECHNICAL_DOCS 分頁
         // ==========================================================
         const CAR_MODELS_SHEETS = {
             "STELVIO INTENSA_2.0": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=548899643&single=true&output=csv",
@@ -171,11 +220,39 @@
             "JUNIOR IBRIDA Q2": "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=777601990&single=true&output=csv"
         };
 
+        // 技術文件對應分頁網址（TECHNICAL_DOCS gid=918059507）
+        const TECH_DOCS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS5HdgQrIifhCs12XLfy8GP_SF9znHAhkvr4yl_U7RFP712U3EOATCSm0_-h6aDtF2LA4kSwImjRcEp/pub?gid=918059507&single=true&output=csv";
+
         let allParsedPackages = {}; 
+        let allParsedDocs = [];
         let currentPackageKey = "";
         let selectedModel = Object.keys(CAR_MODELS_SHEETS)[0];
         let rawLaborSum = 0;
         let rawPartsSum = 0;
+        let activeTag = "全部";
+
+        function switchMainView(view) {
+            const pkgView = document.getElementById('view-package');
+            const docsView = document.getElementById('view-docs');
+            const pkgBtn = document.getElementById('nav-pkg-btn');
+            const docBtn = document.getElementById('nav-doc-btn');
+            const packageTabs = document.getElementById('package-tabs');
+
+            if (view === 'package') {
+                pkgView.classList.remove('hidden');
+                docsView.classList.add('hidden');
+                packageTabs.classList.remove('hidden');
+                pkgBtn.className = "px-3 py-1.5 rounded-md text-xs font-bold text-white bg-red-600 transition-all flex items-center space-x-1 shadow-md";
+                docBtn.className = "px-3 py-1.5 rounded-md text-xs font-bold text-gray-400 hover:text-white transition-all flex items-center space-x-1";
+            } else {
+                pkgView.classList.add('hidden');
+                docsView.classList.remove('hidden');
+                packageTabs.classList.add('hidden');
+                docBtn.className = "px-3 py-1.5 rounded-md text-xs font-bold text-white bg-red-600 transition-all flex items-center space-x-1 shadow-md";
+                pkgBtn.className = "px-3 py-1.5 rounded-md text-xs font-bold text-gray-400 hover:text-white transition-all flex items-center space-x-1";
+                if (allParsedDocs.length === 0) fetchTechDocsData();
+            }
+        }
 
         function initCarModelSelect() {
             const selectEl = document.getElementById('car-model-select');
@@ -190,16 +267,30 @@
             fetchSheetData();
         }
 
+        function refreshData() {
+            fetchSheetData();
+            fetchTechDocsData();
+        }
+
         async function fetchSheetData() {
             const targetUrl = CAR_MODELS_SHEETS[selectedModel];
             try {
-                // 加上時間戳防快取干擾，確保資料同步最即時
                 const response = await fetch(targetUrl + "&cachebust=" + new Date().getTime());
                 const csvText = await response.text();
                 parseExcelCSV(csvText);
             } catch (error) {
-                console.error("抓取雲端資料失敗:", error);
+                console.error("抓取套餐雲端資料失敗:", error);
                 document.getElementById('current-package-title').innerText = "❌ 雲端資料加載失敗，請檢查網路連線";
+            }
+        }
+
+        async function fetchTechDocsData() {
+            try {
+                const response = await fetch(TECH_DOCS_URL + "&cachebust=" + new Date().getTime());
+                const csvText = await response.text();
+                parseDocsCSV(csvText);
+            } catch (error) {
+                console.error("抓取技術文獻失敗:", error);
             }
         }
 
@@ -233,7 +324,7 @@
                     const discount = cols[5] || "";
                     const subtotal = cols[6] || "";
                     const location = cols[7] || ""; 
-                    const description = cols[9] || ""; // J 欄
+                    const description = cols[9] || "";
 
                     const cleanSubtotal = parseFloat(subtotal.replace(/[^0-9.-]+/g, "")) || 0;
 
@@ -253,6 +344,94 @@
                 document.getElementById('current-package-title').innerText = "⚠️ 找不到任何套餐項目，請確認此分頁資料格式是否正確";
                 clearDisplay();
             }
+        }
+
+        function parseDocsCSV(csvText) {
+            const lines = csvText.split(/\r?\n/);
+            const docs = [];
+            lines.forEach((line, index) => {
+                if (index === 0) return; // 跳過標題列
+                const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(cell => cell.replace(/^"|"$/g, '').trim());
+                if (cols.length >= 4 && cols[2] && cols[3]) {
+                    docs.push({
+                        category: cols[0] || "未分類",
+                        code: cols[1] || "",
+                        title: cols[2],
+                        url: cols[3],
+                        keyword: cols[4] || ""
+                    });
+                }
+            });
+
+            allParsedDocs = docs;
+            document.getElementById('doc-count-badge').innerText = `${docs.length} 份文件`;
+            renderDocTags();
+            filterDocs();
+        }
+
+        function renderDocTags() {
+            const categories = ["全部", ...new Set(allParsedDocs.map(d => d.category))];
+            const tagsContainer = document.getElementById('doc-tag-buttons');
+            tagsContainer.innerHTML = categories.map(cat => {
+                const count = cat === "全部" ? allParsedDocs.length : allParsedDocs.filter(d => d.category === cat).length;
+                const activeClass = cat === activeTag 
+                    ? "bg-red-600 text-white border-red-500 shadow-sm" 
+                    : "bg-[#0d1117] text-gray-400 border-gray-700 hover:text-white hover:border-gray-500";
+                return `<button onclick="setDocTag('${cat}')" class="px-2 py-0.5 rounded text-[11px] font-bold border ${activeClass} transition-all">${cat} (${count})</button>`;
+            }).join('');
+        }
+
+        function setDocTag(tag) {
+            activeTag = tag;
+            renderDocTags();
+            filterDocs();
+        }
+
+        function filterDocs() {
+            const query = document.getElementById('doc-search-input').value.toLowerCase();
+            const filtered = allParsedDocs.filter(doc => {
+                const matchesTag = activeTag === "全部" || doc.category === activeTag;
+                const matchesQuery = doc.title.toLowerCase().includes(query) || 
+                                     doc.code.toLowerCase().includes(query) || 
+                                     doc.category.toLowerCase().includes(query) ||
+                                     doc.keyword.toLowerCase().includes(query);
+                return matchesTag && matchesQuery;
+            });
+            renderDocList(filtered);
+        }
+
+        function renderDocList(docs) {
+            const container = document.getElementById('doc-list');
+            if (docs.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-500 text-xs py-8">未找到符合條件的技術文獻</div>';
+                return;
+            }
+
+            container.innerHTML = docs.map((doc, idx) => `
+                <div id="doc-card-${idx}" onclick="previewPDF('${doc.url}', ${idx})" class="bg-[#0d1117] border border-gray-800 hover:border-red-600 rounded-lg p-3 transition-all cursor-pointer flex justify-between items-center group shadow-sm">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-red-950/60 text-red-400 border border-red-900/50 px-1.5 py-0.5 rounded text-[10px] font-bold">${doc.category}</span>
+                            ${doc.code ? `<span class="text-[10px] font-mono text-gray-500">${doc.code}</span>` : ''}
+                        </div>
+                        <h4 class="text-xs font-bold text-gray-200 group-hover:text-white transition-colors">${doc.title}</h4>
+                    </div>
+                    <span class="text-gray-600 group-hover:text-red-500 text-xs font-mono transition-colors">預覽 ▶</span>
+                </div>
+            `).join('');
+        }
+
+        function previewPDF(url, cardIdx) {
+            document.querySelectorAll('#doc-list > div').forEach(el => el.classList.remove('active-doc-card'));
+            const card = document.getElementById(`doc-card-${cardIdx}`);
+            if (card) card.classList.add('active-doc-card');
+
+            const iframe = document.getElementById('doc-pdf-iframe');
+            const placeholder = document.getElementById('doc-preview-placeholder');
+
+            placeholder.classList.add('hidden');
+            iframe.classList.remove('hidden');
+            iframe.src = url;
         }
 
         function renderTabs(keys) {
@@ -418,7 +597,7 @@
             if (event.key === 'Escape') closeLightbox();
         });
 
-        // 啟動排版
+        // 啟動頁面 initialization
         initCarModelSelect();
         fetchSheetData();
     </script>
